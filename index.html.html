@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>就活企業管理・ES締切チェッカー</title>
+  <style>
+    :root {
+      --navy-900: #0f2342;
+      --navy-800: #173563;
+      --navy-700: #1e4682;
+      --navy-100: #e8eef7;
+      --navy-50: #f3f6fb;
+      --bg-page: #f5f7fa;
+      --bg-card: #ffffff;
+      --text-main: #132238;
+      --text-sub: #52637a;
+      --border: #d7e0ec;
+      --danger-bg: #fef2f2;
+      --danger-text: #b91c1c;
+      --danger-border: #fecaca;
+      --warn-bg: #fffbeb;
+      --warn-text: #b45309;
+      --warn-border: #fde68a;
+      --ok-bg: #eff6ff;
+      --ok-text: #1d4ed8;
+      --ok-border: #bfdbfe;
+      --success-bg: #ecfdf5;
+      --success-text: #047857;
+      --success-border: #a7f3d0;
+      --radius: 12px;
+      --shadow: 0 4px 16px rgba(15, 35, 66, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    .app-header {
+      background: linear-gradient(135deg, var(--navy-900), var(--navy-700));
+      color: #ffffff;
+      padding: 20px 16px;
+      box-shadow: 0 2px 10px rgba(15, 35, 66, 0.15);
+    }
+
+    .header-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .app-title {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .app-subtitle {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sync-status-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+    }
+
+    .demo-banner {
+      background: #fffbeb;
+      border-bottom: 1px solid #fde68a;
+      color: #92400e;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .demo-banner.active {
+      display: block;
+    }
+
+    .demo-banner-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 20px auto;
+      padding: 0 16px 56px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      text-align: left;
+      transition: transform 0.12s, border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--navy-700);
+      box-shadow: 0 8px 20px rgba(15, 35, 66, 0.09);
+    }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      display: block;
+    }
+
+    .kpi-value {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--navy-900);
+      margin: 4px 0 2px;
+      display: block;
+    }
+
+    .kpi-hint {
+      font-size: 0.74rem;
+      color: var(--navy-700);
+      display: block;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .card-title {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy-900);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .gas-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .gas-row input {
+      flex: 1 1 320px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="date"],
+    input[type="search"],
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      background: #ffffff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--navy-700);
+      box-shadow: 0 0 0 3px rgba(30, 70, 130, 0.14);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .form-span-2 {
+      grid-column: span 2;
+    }
+
+    @media (max-width: 640px) {
+      .form-span-2 {
+        grid-column: span 1;
+      }
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    @media (max-width: 900px) {
+      .filter-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-main);
+      padding: 10px 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-label input {
+      width: auto;
+      margin: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: scale(0.99);
+    }
+
+    .btn-primary {
+      background: var(--navy-800);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--navy-900);
+    }
+
+    .btn-secondary {
+      background: var(--navy-50);
+      color: var(--navy-900);
+      border-color: var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--navy-100);
+    }
+
+    .btn-demo {
+      background: #ffffff;
+      color: var(--navy-900);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-demo:hover {
+      background: var(--navy-100);
+    }
+
+    .btn-danger {
+      background: #ffffff;
+      color: var(--danger-text);
+      border-color: var(--danger-border);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger-bg);
+    }
+
+    .btn-mini {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      background: var(--navy-50);
+      color: var(--navy-800);
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .btn-mini:hover {
+      background: var(--navy-100);
+    }
+
+    .form-actions {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .notice {
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      margin-top: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .badge-urgent {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-color: var(--danger-border);
+    }
+
+    .badge-soon {
+      background: var(--warn-bg);
+      color: var(--warn-text);
+      border-color: var(--warn-border);
+    }
+
+    .badge-normal {
+      background: var(--ok-bg);
+      color: var(--ok-text);
+      border-color: var(--ok-border);
+    }
+
+    .badge-done {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-color: var(--success-border);
+    }
+
+    .badge-muted {
+      background: #f1f5f9;
+      color: #64748b;
+      border-color: #e2e8f0;
+    }
+
+    .date-sub {
+      display: block;
+      font-size: 0.74rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: var(--navy-50);
+      color: var(--navy-900);
+      font-weight: 700;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    td input, td select {
+      padding: 6px 8px;
+      font-size: 0.84rem;
+    }
+
+    .mobile-list {
+      display: none;
+    }
+
+    @media (max-width: 860px) {
+      .table-wrap {
+        display: none;
+      }
+      .mobile-list {
+        display: grid;
+        gap: 12px;
+      }
+    }
+
+    .mobile-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      background: #ffffff;
+      display: grid;
+      gap: 10px;
+    }
+
+    .mobile-item-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mobile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .inline-copy {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .link-open {
+      font-size: 0.76rem;
+      color: var(--navy-700);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .link-open:hover {
+      text-decoration: underline;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 28px 12px;
+      color: var(--text-sub);
+      font-size: 0.9rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--navy-900);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 6px 20px rgba(15, 35, 66, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <h1 class="app-title">就活企業管理・ES締切チェッカー</h1>
+        <p class="app-subtitle">未提出ESを締切順に優先表示・スプレッドシート連携＆デモモード対応</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn btn-demo" id="toggleDemoBtn">デモデータ読込</button>
+        <div class="sync-status-bar">
+          <span id="syncStatusText">ローカル保存モード</span>
+          <span id="lastSyncTime"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="demo-banner" id="demoBanner">
+    <div class="demo-banner-inner">
+      <span><strong>デモモード表示中：</strong>採用担当者向けサンプルデータ（7社）を表示しています。本番のスプレッドシート・保存データは変更されません。</span>
+      <button type="button" class="btn btn-secondary" id="exitDemoBtn">本番データに戻る</button>
+    </div>
+  </div>
+
+  <main class="container">
+    <!-- 進捗ダッシュボード -->
+    <section class="kpi-grid" aria-label="就活進捗ダッシュボード">
+      <button type="button" class="kpi-card" id="kpiAllCard">
+        <span class="kpi-label">登録企業数</span>
+        <span class="kpi-value" id="kpiTotalCount">0</span>
+        <span class="kpi-hint">クリックで全件表示</span>
+      </button>
+      <button type="button" class="kpi-card" id="kpiUrgentCard">
+        <span class="kpi-label">7日以内の未提出ES</span>
+        <span class="kpi-value" id="kpiUrgentCount">0</span>
+        <span class="kpi-hint">クリックでES作成中を表示</span>
+      </button>
+      <button type="button" class="kpi-card" id="kpiProgressCard">
+        <span class="kpi-label">選考進行中</span>
+        <span class="kpi-value" id="kpiProgressCount">0</span>
+        <span class="kpi-hint">ES提出済〜最終面接</span>
+      </button>
+      <button type="button" class="kpi-card" id="kpiOfferCard">
+        <span class="kpi-label">内定獲得</span>
+        <span class="kpi-value" id="kpiOfferCount">0</span>
+        <span class="kpi-hint">クリックで内定企業を表示</span>
+      </button>
+    </section>
+
+    <!-- GAS連携設定 -->
+    <section class="card" id="gasSection">
+      <h2 class="card-title">
+        <span>スプレッドシート連携（GAS URL）</span>
+        <button type="button" class="btn btn-secondary" id="reloadFromGasBtn">今すぐ読み込み</button>
+      </h2>
+      <div class="gas-row">
+        <input
+          type="url"
+          id="gasUrlInput"
+          placeholder="https://script.google.com/macros/s/xxxxx/exec"
+          aria-label="GASウェブアプリURL"
+        />
+        <button type="button" class="btn btn-primary" id="saveGasUrlBtn">URLを保存して同期</button>
+      </div>
+      <p class="notice">
+        URLを設定すると、追加・編集・削除した内容がスプレッドシート（<code>企業管理</code> シートのA〜H列）に自動反映されます。
+      </p>
+    </section>
+
+    <!-- 新規追加フォーム -->
+    <section class="card">
+      <h2 class="card-title">企業を追加する</h2>
+      <form id="addCompanyForm">
+        <div class="form-grid">
+          <div>
+            <label for="companyNameInput">企業名 *</label>
+            <input type="text" id="companyNameInput" placeholder="例：株式会社〇〇" required />
+          </div>
+          <div>
+            <label for="priorityInput">志望度 *</label>
+            <select id="priorityInput">
+              <option value="高">高</option>
+              <option value="中" selected>中</option>
+              <option value="低">低</option>
+            </select>
+          </div>
+          <div>
+            <label for="statusInput">選考ステータス *</label>
+            <select id="statusInput">
+              <option value="ES作成中" selected>ES作成中</option>
+              <option value="ES提出済">ES提出済</option>
+              <option value="一次面接">一次面接</option>
+              <option value="二次面接">二次面接</option>
+              <option value="最終面接">最終面接</option>
+              <option value="内定">内定</option>
+              <option value="見送り">見送り</option>
+            </select>
+          </div>
+          <div>
+            <label for="deadlineInput">ES締切日</label>
+            <input type="date" id="deadlineInput" />
+          </div>
+          <div>
+            <label for="mypageUrlInput">マイページURL</label>
+            <input type="url" id="mypageUrlInput" placeholder="https://..." />
+          </div>
+          <div>
+            <label for="loginIdInput">ログインID</label>
+            <input type="text" id="loginIdInput" placeholder="例：taro@example.com" />
+          </div>
+          <div class="form-span-2">
+            <label for="memoInput">メモ</label>
+            <input type="text" id="memoInput" placeholder="例：Webテストあり、志望動機の要点など" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <span class="notice" style="margin:0;">※ 「ES作成中（未提出）」が締切の近い順に最優先で並びます。</span>
+          <button type="submit" class="btn btn-primary">＋ 企業を追加</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 絞り込み＆企業一覧 -->
+    <section class="card">
+      <h2 class="card-title">
+        <span>登録企業一覧（未提出の締切順）</span>
+        <span id="companyCountBadge" class="badge badge-normal">0社表示</span>
+      </h2>
+
+      <div class="filter-grid" style="margin-bottom:14px;">
+        <div>
+          <label for="searchKeywordInput">キーワード検索（企業名・メモ）</label>
+          <input type="search" id="searchKeywordInput" placeholder="企業名やキーワードで検索..." />
+        </div>
+        <div>
+          <label for="filterPrioritySelect">志望度フィルター</label>
+          <select id="filterPrioritySelect">
+            <option value="ALL">すべて</option>
+            <option value="高">高</option>
+            <option value="中">中</option>
+            <option value="低">低</option>
+          </select>
+        </div>
+        <div>
+          <label for="filterStatusSelect">ステータスフィルター</label>
+          <select id="filterStatusSelect">
+            <option value="ALL">すべて</option>
+            <option value="ES作成中">ES作成中</option>
+            <option value="ES提出済">ES提出済</option>
+            <option value="一次面接">一次面接</option>
+            <option value="二次面接">二次面接</option>
+            <option value="最終面接">最終面接</option>
+            <option value="内定">内定</option>
+            <option value="見送り">見送り</option>
+          </select>
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="hideClosedCheckbox" />
+          <span>内定・見送りを隠す</span>
+        </label>
+        <button type="button" class="btn btn-secondary" id="resetFilterBtn">条件リセット</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>締切状況</th>
+              <th>企業名</th>
+              <th>志望度</th>
+              <th>ステータス</th>
+              <th>ES締切日</th>
+              <th>マイページURL</th>
+              <th>ログインID</th>
+              <th>メモ</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="companyTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="mobile-list" id="companyMobileList"></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY_COMPANIES = 'shukatsu_companies_v1';
+    const STORAGE_KEY_GAS_URL = 'shukatsu_gas_url_v1';
+    const STATUS_OPTIONS = ['ES作成中', 'ES提出済', '一次面接', '二次面接', '最終面接', '内定', '見送り'];
+    const PRIORITY_OPTIONS = ['高', '中', '低'];
+    const PROGRESS_STATUSES = ['ES提出済', '一次面接', '二次面接', '最終面接'];
+    const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+
+    let companies = [];
+    let demoCompanies = [];
+    let isDemoMode = false;
+    let gasUrl = '';
+
+    const el = {
+      toggleDemoBtn: document.getElementById('toggleDemoBtn'),
+      exitDemoBtn: document.getElementById('exitDemoBtn'),
+      demoBanner: document.getElementById('demoBanner'),
+      gasSection: document.getElementById('gasSection'),
+      gasUrlInput: document.getElementById('gasUrlInput'),
+      saveGasUrlBtn: document.getElementById('saveGasUrlBtn'),
+      reloadFromGasBtn: document.getElementById('reloadFromGasBtn'),
+      syncStatusText: document.getElementById('syncStatusText'),
+      lastSyncTime: document.getElementById('lastSyncTime'),
+      kpiAllCard: document.getElementById('kpiAllCard'),
+      kpiUrgentCard: document.getElementById('kpiUrgentCard'),
+      kpiProgressCard: document.getElementById('kpiProgressCard'),
+      kpiOfferCard: document.getElementById('kpiOfferCard'),
+      kpiTotalCount: document.getElementById('kpiTotalCount'),
+      kpiUrgentCount: document.getElementById('kpiUrgentCount'),
+      kpiProgressCount: document.getElementById('kpiProgressCount'),
+      kpiOfferCount: document.getElementById('kpiOfferCount'),
+      addCompanyForm: document.getElementById('addCompanyForm'),
+      companyNameInput: document.getElementById('companyNameInput'),
+      priorityInput: document.getElementById('priorityInput'),
+      statusInput: document.getElementById('statusInput'),
+      deadlineInput: document.getElementById('deadlineInput'),
+      mypageUrlInput: document.getElementById('mypageUrlInput'),
+      loginIdInput: document.getElementById('loginIdInput'),
+      memoInput: document.getElementById('memoInput'),
+      searchKeywordInput: document.getElementById('searchKeywordInput'),
+      filterPrioritySelect: document.getElementById('filterPrioritySelect'),
+      filterStatusSelect: document.getElementById('filterStatusSelect'),
+      hideClosedCheckbox: document.getElementById('hideClosedCheckbox'),
+      resetFilterBtn: document.getElementById('resetFilterBtn'),
+      companyCountBadge: document.getElementById('companyCountBadge'),
+      companyTableBody: document.getElementById('companyTableBody'),
+      companyMobileList: document.getElementById('companyMobileList'),
+      toast: document.getElementById('toast')
+    };
+
+    function getActiveList() {
+      return isDemoMode ? demoCompanies : companies;
+    }
+
+    function setActiveList(nextList) {
+      if (isDemoMode) {
+        demoCompanies = nextList;
+      } else {
+        companies = nextList;
+        saveLocal();
+      }
+    }
+
+    function addDaysToToday(offsetDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function createSampleDemoData() {
+      return [
+        {
+          id: 'demo_1',
+          companyName: '株式会社ネクストクラウド',
+          priority: '高',
+          status: 'ES作成中',
+          deadline: addDaysToToday(2),
+          mypageUrl: 'https://example.com/mypage/nextcloud',
+          loginId: 'career_demo_01',
+          memo: '志望動機（DX推進・課題解決）を最終推敲中'
+        },
+        {
+          id: 'demo_2',
+          companyName: 'ブルーオーシャン商事株式会社',
+          priority: '高',
+          status: 'ES作成中',
+          deadline: addDaysToToday(5),
+          mypageUrl: 'https://example.com/mypage/blueocean',
+          loginId: 'demo.student@example.jp',
+          memo: '設問3つ：学生時代に力を入れたこと・強み・入社後やりたいこと'
+        },
+        {
+          id: 'demo_3',
+          companyName: 'アーバンペイメント株式会社',
+          priority: '中',
+          status: 'ES作成中',
+          deadline: addDaysToToday(12),
+          mypageUrl: 'https://example.com/mypage/urbanpay',
+          loginId: 'up_2027_084',
+          memo: 'Webテスト受検期限も同日なので早めに完了させる'
+        },
+        {
+          id: 'demo_4',
+          companyName: 'フロンティアデータ株式会社',
+          priority: '高',
+          status: '一次面接',
+          deadline: addDaysToToday(-3),
+          mypageUrl: 'https://example.com/mypage/frontier',
+          loginId: 'fd_user_19',
+          memo: '来週火曜 14:00 オンライン面接（人事・現場社員）'
+        },
+        {
+          id: 'demo_5',
+          companyName: 'グリーンロジスティクス株式会社',
+          priority: '中',
+          status: 'ES提出済',
+          deadline: addDaysToToday(-1),
+          mypageUrl: 'https://example.com/mypage/greenlogi',
+          loginId: 'gl_entry_55',
+          memo: '合否連絡待ち（1週間目安）'
+        },
+        {
+          id: 'demo_6',
+          companyName: 'サンライズシステムズ株式会社',
+          priority: '高',
+          status: '内定',
+          deadline: addDaysToToday(-14),
+          mypageUrl: 'https://example.com/mypage/sunrise',
+          loginId: 'sr_offer_03',
+          memo: 'オファー面談の日程調整中'
+        },
+        {
+          id: 'demo_7',
+          companyName: 'メトロポリタン企画株式会社',
+          priority: '低',
+          status: '見送り',
+          deadline: addDaysToToday(-8),
+          mypageUrl: '',
+          loginId: '',
+          memo: '書類選考結果受領済み'
+        }
+      ];
+    }
+
+    function showToast(message) {
+      el.toast.textContent = message;
+      el.toast.classList.add('show');
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => {
+        el.toast.classList.remove('show');
+      }, 2400);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function isSafeHttpUrl(url) {
+      try {
+        const parsed = new URL(String(url || '').trim());
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    }
+
+    function getTodayDateString() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function calcDiffDays(deadlineStr) {
+      if (!deadlineStr) return null;
+      const match = String(deadlineStr).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return null;
+      const todayParts = getTodayDateString().split('-').map(Number);
+      const todayUtc = Date.UTC(todayParts[0], todayParts[1] - 1, todayParts[2]);
+      const targetUtc = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      return Math.round((targetUtc - todayUtc) / (1000 * 60 * 60 * 24));
+    }
+
+    function formatDateWithWeekday(deadlineStr) {
+      const match = String(deadlineStr || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return '';
+      const d = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      if (isNaN(d.getTime())) return '';
+      return `${Number(match[2])}/${Number(match[3])}(${WEEKDAYS[d.getDay()]})`;
+    }
+
+    function getDeadlineBadge(item) {
+      if (item.status !== 'ES作成中') {
+        return `<span class="badge badge-done">${escapeHtml(item.status)}</span>`;
+      }
+      const diff = calcDiffDays(item.deadline);
+      if (diff === null) {
+        return '<span class="badge badge-muted">締切未設定</span>';
+      }
+      if (diff < 0) {
+        return `<span class="badge badge-urgent">期限超過（${Math.abs(diff)}日前）</span>`;
+      }
+      if (diff === 0) {
+        return '<span class="badge badge-urgent">本日締切！</span>';
+      }
+      if (diff <= 3) {
+        return `<span class="badge badge-urgent">あと${diff}日</span>`;
+      }
+      if (diff <= 7) {
+        return `<span class="badge badge-soon">あと${diff}日</span>`;
+      }
+      return `<span class="badge badge-normal">あと${diff}日</span>`;
+    }
+
+    function getSortTier(item) {
+      // 0: 未提出（ES作成中）で締切あり
+      // 1: 未提出（ES作成中）で締切未設定
+      // 2: 選考進行中（ES提出済〜最終面接）または内定
+      // 3: 見送り
+      if (item.status === '見送り') return 3;
+      if (item.status === 'ES作成中') {
+        return item.deadline ? 0 : 1;
+      }
+      return 2;
+    }
+
+    function sortCompaniesSmart(list) {
+      return [...list].sort((a, b) => {
+        const tierA = getSortTier(a);
+        const tierB = getSortTier(b);
+        if (tierA !== tierB) return tierA - tierB;
+
+        if (a.deadline && b.deadline && a.deadline !== b.deadline) {
+          return a.deadline.localeCompare(b.deadline);
+        }
+        if (a.deadline && !b.deadline) return -1;
+        if (!a.deadline && b.deadline) return 1;
+
+        return String(a.companyName).localeCompare(String(b.companyName), 'ja');
+      });
+    }
+
+    function updateDashboard(list) {
+      const total = list.length;
+      const urgentUnsubmitted = list.filter(item => {
+        if (item.status !== 'ES作成中') return false;
+        const diff = calcDiffDays(item.deadline);
+        return diff !== null && diff <= 7;
+      }).length;
+      const inProgress = list.filter(item => PROGRESS_STATUSES.includes(item.status)).length;
+      const offers = list.filter(item => item.status === '内定').length;
+
+      el.kpiTotalCount.textContent = String(total);
+      el.kpiUrgentCount.textContent = String(urgentUnsubmitted);
+      el.kpiProgressCount.textContent = String(inProgress);
+      el.kpiOfferCount.textContent = String(offers);
+    }
+
+    function getFilteredSortedCompanies() {
+      const keyword = el.searchKeywordInput.value.trim().toLowerCase();
+      const priorityFilter = el.filterPrioritySelect.value;
+      const statusFilter = el.filterStatusSelect.value;
+      const hideClosed = el.hideClosedCheckbox.checked;
+
+      const filtered = getActiveList().filter(item => {
+        if (priorityFilter !== 'ALL' && item.priority !== priorityFilter) return false;
+        if (statusFilter !== 'ALL' && item.status !== statusFilter) return false;
+        if (hideClosed && (item.status === '見送り' || item.status === '内定')) return false;
+        if (keyword) {
+          const hay = `${item.companyName} ${item.memo} ${item.status} ${item.loginId}`.toLowerCase();
+          if (!hay.includes(keyword)) return false;
+        }
+        return true;
+      });
+
+      return sortCompaniesSmart(filtered);
+    }
+
+    function saveLocal() {
+      localStorage.setItem(STORAGE_KEY_COMPANIES, JSON.stringify(companies));
+    }
+
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_COMPANIES);
+        const parsed = raw ? JSON.parse(raw) : [];
+        companies = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        companies = [];
+      }
+    }
+
+    function setSyncStatus(text, isSynced = false) {
+      el.syncStatusText.textContent = text;
+      if (isSynced) {
+        const now = new Date();
+        el.lastSyncTime.textContent = `(${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')})`;
+      } else {
+        el.lastSyncTime.textContent = '';
+      }
+    }
+
+    async function fetchFromGas() {
+      if (!gasUrl || isDemoMode) return false;
+      setSyncStatus('同期中...');
+      const res = await fetch(gasUrl, { method: 'GET' });
+      const data = await res.json();
+      if (!data.ok) {
+        throw new Error(data.error || '読み込みに失敗しました');
+      }
+      companies = Array.isArray(data.companies) ? data.companies : [];
+      saveLocal();
+      render();
+      setSyncStatus('スプレッドシート連携中', true);
+      return true;
+    }
+
+    async function postToGas(bodyObj) {
+      if (!gasUrl || isDemoMode) return;
+      setSyncStatus('シートへ保存中...');
+      const res = await fetch(gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(bodyObj)
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        throw new Error(data.error || 'スプレッドシートへの保存に失敗しました');
+      }
+      if (Array.isArray(data.companies)) {
+        companies = data.companies;
+        saveLocal();
+        render();
+      }
+      setSyncStatus('スプレッドシート連携中', true);
+    }
+
+    function renderSelectOptions(options, selectedValue) {
+      return options.map(opt => {
+        const sel = opt === selectedValue ? ' selected' : '';
+        return `<option value="${escapeHtml(opt)}"${sel}>${escapeHtml(opt)}</option>`;
+      }).join('');
+    }
+
+    function render() {
+      const activeList = getActiveList();
+      updateDashboard(activeList);
+
+      el.demoBanner.classList.toggle('active', isDemoMode);
+      el.gasSection.style.display = isDemoMode ? 'none' : '';
+      el.toggleDemoBtn.textContent = isDemoMode ? 'デモモード中' : 'デモデータ読込';
+
+      if (isDemoMode) {
+        setSyncStatus('デモモード表示中');
+      } else if (gasUrl) {
+        setSyncStatus('スプレッドシート連携中');
+      } else {
+        setSyncStatus('ローカル保存モード');
+      }
+
+      const sortedFiltered = getFilteredSortedCompanies();
+      el.companyCountBadge.textContent = `${sortedFiltered.length}社表示 / 全${activeList.length}社`;
+
+      if (sortedFiltered.length === 0) {
+        el.companyTableBody.innerHTML = '<tr><td colspan="9" class="empty-state">条件に一致する企業がありません。フィルターをリセットするか、上のフォームから企業を追加してください。</td></tr>';
+        el.companyMobileList.innerHTML = '<div class="empty-state">条件に一致する企業がありません。フィルターをリセットするか、上のフォームから企業を追加してください。</div>';
+        return;
+      }
+
+      el.companyTableBody.innerHTML = sortedFiltered.map(item => {
+        const safeUrl = isSafeHttpUrl(item.mypageUrl) ? escapeHtml(item.mypageUrl) : '';
+        const weekdayText = formatDateWithWeekday(item.deadline);
+        return `
+          <tr data-id="${escapeHtml(item.id)}">
+            <td>${getDeadlineBadge(item.deadline ? item : item)}</td>
+            <td><input type="text" data-field="companyName" value="${escapeHtml(item.companyName)}" /></td>
+            <td>
+              <select data-field="priority">
+                ${renderSelectOptions(PRIORITY_OPTIONS, item.priority)}
+              </select>
+            </td>
+            <td>
+              <select data-field="status">
+                ${renderSelectOptions(STATUS_OPTIONS, item.status)}
+              </select>
+            </td>
+            <td>
+              <input type="date" data-field="deadline" value="${escapeHtml(item.deadline)}" />
+              ${weekdayText ? `<span class="date-sub">${escapeHtml(weekdayText)}</span>` : ''}
+            </td>
+            <td>
+              <input type="url" data-field="mypageUrl" value="${escapeHtml(item.mypageUrl)}" placeholder="https://..." />
+              <div class="inline-copy">
+                ${safeUrl ? `<a class="link-open" href="${safeUrl}" target="_blank" rel="noopener noreferrer">開く</a>` : ''}
+                ${item.mypageUrl ? `<button type="button" class="btn-mini" data-copy="${escapeHtml(item.mypageUrl)}">URLコピー</button>` : ''}
+              </div>
+            </td>
+            <td>
+              <input type="text" data-field="loginId" value="${escapeHtml(item.loginId)}" placeholder="ログインID" />
+              ${item.loginId ? `<div class="inline-copy"><button type="button" class="btn-mini" data-copy="${escapeHtml(item.loginId)}">IDコピー</button></div>` : ''}
+            </td>
+            <td><input type="text" data-field="memo" value="${escapeHtml(item.memo)}" placeholder="メモ" /></td>
+            <td><button type="button" class="btn-danger" data-delete="${escapeHtml(item.id)}">削除</button></td>
+          </tr>
+        `;
+      }).join('');
+
+      el.companyMobileList.innerHTML = sortedFiltered.map(item => {
+        const safeUrl = isSafeHttpUrl(item.mypageUrl) ? escapeHtml(item.mypageUrl) : '';
+        const weekdayText = formatDateWithWeekday(item.deadline);
+        return `
+          <div class="mobile-item" data-id="${escapeHtml(item.id)}">
+            <div class="mobile-item-head">
+              ${getDeadlineBadge(item)}
+              <button type="button" class="btn-danger" data-delete="${escapeHtml(item.id)}">削除</button>
+            </div>
+            <div>
+              <label>企業名</label>
+              <input type="text" data-field="companyName" value="${escapeHtml(item.companyName)}" />
+            </div>
+            <div class="mobile-grid">
+              <div>
+                <label>志望度</label>
+                <select data-field="priority">${renderSelectOptions(PRIORITY_OPTIONS, item.priority)}</select>
+              </div>
+              <div>
+                <label>ステータス</label>
+                <select data-field="status">${renderSelectOptions(STATUS_OPTIONS, item.status)}</select>
+              </div>
+            </div>
+            <div>
+              <label>ES締切日 ${weekdayText ? `（${escapeHtml(weekdayText)}）` : ''}</label>
+              <input type="date" data-field="deadline" value="${escapeHtml(item.deadline)}" />
+            </div>
+            <div>
+              <label>マイページURL</label>
+              <input type="url" data-field="mypageUrl" value="${escapeHtml(item.mypageUrl)}" placeholder="https://..." />
+              <div class="inline-copy">
+                ${safeUrl ? `<a class="link-open" href="${safeUrl}" target="_blank" rel="noopener noreferrer">マイページを開く</a>` : ''}
+                ${item.mypageUrl ? `<button type="button" class="btn-mini" data-copy="${escapeHtml(item.mypageUrl)}">URLコピー</button>` : ''}
+              </div>
+            </div>
+            <div>
+              <label>ログインID</label>
+              <input type="text" data-field="loginId" value="${escapeHtml(item.loginId)}" placeholder="ログインID" />
+              ${item.loginId ? `<div class="inline-copy"><button type="button" class="btn-mini" data-copy="${escapeHtml(item.loginId)}">IDコピー</button></div>` : ''}
+            </div>
+            <div>
+              <label>メモ</label>
+              <input type="text" data-field="memo" value="${escapeHtml(item.memo)}" placeholder="メモ" />
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handleFieldChange(target) {
+      const container = target.closest('[data-id]');
+      const field = target.getAttribute('data-field');
+      if (!container || !field) return;
+
+      const id = container.getAttribute('data-id');
+      const currentList = [...getActiveList()];
+      const idx = currentList.findIndex(c => c.id === id);
+      if (idx === -1) return;
+
+      const updatedItem = {
+        ...currentList[idx],
+        [field]: target.value.trim()
+      };
+      currentList[idx] = updatedItem;
+      setActiveList(currentList);
+      render();
+
+      if (!isDemoMode && gasUrl) {
+        try {
+          await postToGas({ action: 'upsert', item: updatedItem });
+          showToast('スプレッドシートを更新しました');
+        } catch (err) {
+          showToast(`同期エラー: ${err.message}`);
+        }
+      } else {
+        showToast(isDemoMode ? 'デモデータを更新しました' : '保存しました');
+      }
+    }
+
+    el.addCompanyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = el.companyNameInput.value.trim();
+      if (!name) return;
+
+      const newItem = {
+        id: `${isDemoMode ? 'demo' : 'cmp'}_${Date.now()}`,
+        companyName: name,
+        priority: el.priorityInput.value,
+        status: el.statusInput.value,
+        deadline: el.deadlineInput.value,
+        mypageUrl: el.mypageUrlInput.value.trim(),
+        loginId: el.loginIdInput.value.trim(),
+        memo: el.memoInput.value.trim()
+      };
+
+      const nextList = [...getActiveList(), newItem];
+      setActiveList(nextList);
+      render();
+      el.addCompanyForm.reset();
+      el.priorityInput.value = '中';
+      el.statusInput.value = 'ES作成中';
+
+      if (!isDemoMode && gasUrl) {
+        try {
+          await postToGas({ action: 'upsert', item: newItem });
+          showToast('追加してスプレッドシートに反映しました');
+        } catch (err) {
+          showToast(`同期エラー: ${err.message}`);
+        }
+      } else {
+        showToast(isDemoMode ? 'デモ一覧に追加しました' : '企業を追加しました');
+      }
+    });
+
+    document.addEventListener('change', (e) => {
+      if (e.target.matches('[data-field]')) {
+        handleFieldChange(e.target);
+      } else if (
+        e.target === el.searchKeywordInput ||
+        e.target === el.filterPrioritySelect ||
+        e.target === el.filterStatusSelect ||
+        e.target === el.hideClosedCheckbox
+      ) {
+        render();
+      }
+    });
+
+    el.searchKeywordInput.addEventListener('input', render);
+
+    el.resetFilterBtn.addEventListener('click', () => {
+      el.searchKeywordInput.value = '';
+      el.filterPrioritySelect.value = 'ALL';
+      el.filterStatusSelect.value = 'ALL';
+      el.hideClosedCheckbox.checked = false;
+      render();
+      showToast('絞り込み条件をリセットしました');
+    });
+
+    el.kpiAllCard.addEventListener('click', () => {
+      el.filterStatusSelect.value = 'ALL';
+      el.hideClosedCheckbox.checked = false;
+      render();
+    });
+
+    el.kpiUrgentCard.addEventListener('click', () => {
+      el.filterStatusSelect.value = 'ES作成中';
+      el.hideClosedCheckbox.checked = false;
+      render();
+    });
+
+    el.kpiProgressCard.addEventListener('click', () => {
+      el.filterStatusSelect.value = 'ALL';
+      el.hideClosedCheckbox.checked = true;
+      render();
+    });
+
+    el.kpiOfferCard.addEventListener('click', () => {
+      el.filterStatusSelect.value = '内定';
+      el.hideClosedCheckbox.checked = false;
+      render();
+    });
+
+    el.toggleDemoBtn.addEventListener('click', () => {
+      if (isDemoMode) return;
+      demoCompanies = createSampleDemoData();
+      isDemoMode = true;
+      render();
+      showToast('デモデータを読み込みました');
+    });
+
+    el.exitDemoBtn.addEventListener('click', () => {
+      isDemoMode = false;
+      render();
+      showToast('本番データに戻りました');
+    });
+
+    document.addEventListener('click', async (e) => {
+      const copyVal = e.target.getAttribute('data-copy');
+      if (copyVal !== null) {
+        try {
+          await navigator.clipboard.writeText(copyVal);
+          showToast('コピーしました');
+        } catch {
+          showToast('コピーできませんでした');
+        }
+        return;
+      }
+
+      const deleteId = e.target.getAttribute('data-delete');
+      if (deleteId) {
+        const nextList = getActiveList().filter(c => c.id !== deleteId);
+        setActiveList(nextList);
+        render();
+
+        if (!isDemoMode && gasUrl) {
+          try {
+            await postToGas({ action: 'delete', id: deleteId });
+            showToast('削除してスプレッドシートに反映しました');
+          } catch (err) {
+            showToast(`同期エラー: ${err.message}`);
+          }
+        } else {
+          showToast('削除しました');
+        }
+      }
+    });
+
+    el.saveGasUrlBtn.addEventListener('click', async () => {
+      gasUrl = el.gasUrlInput.value.trim();
+      localStorage.setItem(STORAGE_KEY_GAS_URL, gasUrl);
+      if (!gasUrl) {
+        setSyncStatus('ローカル保存モード');
+        showToast('GAS URLを解除しました');
+        return;
+      }
+      try {
+        await fetchFromGas();
+        showToast('スプレッドシートと接続しました');
+      } catch (err) {
+        setSyncStatus('接続エラー');
+        showToast(`接続エラー: ${err.message}`);
+      }
+    });
+
+    el.reloadFromGasBtn.addEventListener('click', async () => {
+      if (!gasUrl) {
+        showToast('先にGASのURLを入力して保存してください');
+        return;
+      }
+      try {
+        await fetchFromGas();
+        showToast('最新データを読み込みました');
+      } catch (err) {
+        setSyncStatus('接続エラー');
+        showToast(`読み込みエラー: ${err.message}`);
+      }
+    });
+
+    (async function init() {
+      loadLocal();
+      gasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL) || '';
+      el.gasUrlInput.value = gasUrl;
+      render();
+
+      if (gasUrl) {
+        try {
+          await fetchFromGas();
+        } catch {
+          setSyncStatus('オフライン／ローカル表示中');
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
