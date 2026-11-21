@@ -3,1391 +3,876 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>就活企業管理・ES締切チェッカー</title>
+  <title>就活マネジメント・ダッシュボード | 選考ファネル＆ES締切管理</title>
   <style>
     :root {
-      --navy-900: #0f2342;
-      --navy-800: #173563;
-      --navy-700: #1e4682;
-      --navy-100: #e8eef7;
-      --navy-50: #f3f6fb;
-      --bg-page: #f5f7fa;
-      --bg-card: #ffffff;
-      --text-main: #132238;
-      --text-sub: #52637a;
-      --border: #d7e0ec;
+      --navy: #0f2540;
+      --navy-light: #1d3b63;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
       --danger-bg: #fef2f2;
-      --danger-text: #b91c1c;
-      --danger-border: #fecaca;
+      --warn: #d97706;
       --warn-bg: #fffbeb;
-      --warn-text: #b45309;
-      --warn-border: #fde68a;
-      --ok-bg: #eff6ff;
-      --ok-text: #1d4ed8;
-      --ok-border: #bfdbfe;
+      --success: #059669;
       --success-bg: #ecfdf5;
-      --success-text: #047857;
-      --success-border: #a7f3d0;
-      --radius: 12px;
-      --shadow: 0 4px 16px rgba(15, 35, 66, 0.06);
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-      background: var(--bg-page);
-      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--text);
       line-height: 1.5;
     }
-
-    .app-header {
-      background: linear-gradient(135deg, var(--navy-900), var(--navy-700));
-      color: #ffffff;
-      padding: 20px 16px;
-      box-shadow: 0 2px 10px rgba(15, 35, 66, 0.15);
+    header {
+      background: var(--navy);
+      color: #fff;
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
-
     .header-inner {
-      max-width: 1240px;
+      max-width: 1120px;
       margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
     }
-
-    .app-title {
+    .title-area h1 {
       margin: 0;
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-size: 1.15rem;
       letter-spacing: 0.02em;
     }
-
-    .app-subtitle {
-      margin: 4px 0 0;
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.82);
+    .title-area p {
+      margin: 2px 0 0;
+      font-size: 0.78rem;
+      color: #cbd5e1;
     }
-
     .header-actions {
       display: flex;
+      align-items: center;
+      gap: 8px;
       flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
     }
-
-    .sync-status-bar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      padding: 6px 12px;
+    .status-pill {
+      font-size: 0.75rem;
+      padding: 4px 10px;
       border-radius: 999px;
-      font-size: 0.8rem;
+      background: rgba(255,255,255,0.14);
+      color: #e2e8f0;
     }
-
-    .demo-banner {
-      background: #fffbeb;
-      border-bottom: 1px solid #fde68a;
-      color: #92400e;
-      padding: 10px 16px;
-      font-size: 0.85rem;
-      display: none;
+    .status-pill.connected {
+      background: #065f46;
+      color: #a7f3d0;
     }
-
-    .demo-banner.active {
-      display: block;
+    .status-pill.demo {
+      background: #92400e;
+      color: #fde68a;
     }
-
-    .demo-banner-inner {
-      max-width: 1240px;
-      margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
     .container {
-      max-width: 1240px;
-      margin: 20px auto;
-      padding: 0 16px 56px;
-      display: grid;
-      gap: 20px;
+      max-width: 1120px;
+      margin: 18px auto 48px;
+      padding: 0 16px;
     }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    @media (max-width: 900px) {
-      .kpi-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    .kpi-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      text-align: left;
-      transition: transform 0.12s, border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .kpi-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--navy-700);
-      box-shadow: 0 8px 20px rgba(15, 35, 66, 0.09);
-    }
-
-    .kpi-label {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--text-sub);
-      display: block;
-    }
-
-    .kpi-value {
-      font-size: 1.65rem;
-      font-weight: 800;
-      color: var(--navy-900);
-      margin: 4px 0 2px;
-      display: block;
-    }
-
-    .kpi-hint {
-      font-size: 0.74rem;
-      color: var(--navy-700);
-      display: block;
-    }
-
     .card {
-      background: var(--bg-card);
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 18px;
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(15, 37, 64, 0.04);
     }
-
     .card-title {
-      margin: 0 0 14px;
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 700;
-      color: var(--navy-900);
+      color: var(--navy);
+      margin: 0 0 12px;
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
     }
-
-    .gas-row {
+    /* GAS Bar */
+    .gas-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
+      align-items: center;
     }
-
-    .gas-row input {
-      flex: 1 1 320px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-sub);
-      margin-bottom: 4px;
-    }
-
-    input[type="text"],
-    input[type="url"],
-    input[type="date"],
-    input[type="search"],
-    select {
-      width: 100%;
-      padding: 10px 12px;
+    .gas-bar input {
+      flex: 1;
+      min-width: 220px;
+      padding: 8px 12px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      font-size: 0.9rem;
-      color: var(--text-main);
-      background: #ffffff;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      font-size: 0.85rem;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      transition: opacity 0.15s, transform 0.05s;
+    }
+    button:active { transform: translateY(1px); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-navy { background: var(--navy); color: #fff; }
+    .btn-outline { background: #fff; color: var(--navy); border: 1px solid var(--border); }
+    .btn-demo { background: #f59e0b; color: #1e293b; }
+    .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #fecaca; padding: 5px 10px; font-size: 0.78rem; }
+    .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+
+    /* KPI & Funnel */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: 16px;
+    }
+    @media (max-width: 820px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .kpi-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .kpi-label { font-size: 0.76rem; color: var(--muted); }
+    .kpi-val { font-size: 1.45rem; font-weight: 800; color: var(--navy); margin-top: 2px; }
+    .kpi-val.danger { color: var(--danger); }
+    .kpi-val.success { color: var(--success); }
+
+    .funnel-row {
+      margin-bottom: 10px;
+    }
+    .funnel-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .funnel-track {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .funnel-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--navy), var(--accent));
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+    .bottleneck-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+      font-size: 0.82rem;
+      color: var(--navy);
     }
 
-    input:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--navy-700);
-      box-shadow: 0 0 0 3px rgba(30, 70, 130, 0.14);
-    }
-
+    /* Form */
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-    }
-
-    .form-span-2 {
-      grid-column: span 2;
-    }
-
-    @media (max-width: 640px) {
-      .form-span-2 {
-        grid-column: span 1;
-      }
-    }
-
-    .filter-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr auto auto;
-      gap: 12px;
-      align-items: end;
-    }
-
-    @media (max-width: 900px) {
-      .filter-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .filter-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      color: var(--text-main);
-      padding: 10px 4px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .checkbox-label input {
-      width: auto;
-      margin: 0;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 9px 14px;
-      border-radius: 8px;
-      font-size: 0.86rem;
-      font-weight: 600;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      white-space: nowrap;
-    }
-
-    .btn:active {
-      transform: scale(0.99);
-    }
-
-    .btn-primary {
-      background: var(--navy-800);
-      color: #ffffff;
-    }
-
-    .btn-primary:hover {
-      background: var(--navy-900);
-    }
-
-    .btn-secondary {
-      background: var(--navy-50);
-      color: var(--navy-900);
-      border-color: var(--border);
-    }
-
-    .btn-secondary:hover {
-      background: var(--navy-100);
-    }
-
-    .btn-demo {
-      background: #ffffff;
-      color: var(--navy-900);
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-
-    .btn-demo:hover {
-      background: var(--navy-100);
-    }
-
-    .btn-danger {
-      background: #ffffff;
-      color: var(--danger-text);
-      border-color: var(--danger-border);
-      padding: 6px 10px;
-      font-size: 0.8rem;
-    }
-
-    .btn-danger:hover {
-      background: var(--danger-bg);
-    }
-
-    .btn-mini {
-      padding: 4px 8px;
-      font-size: 0.75rem;
-      border-radius: 6px;
-      background: var(--navy-50);
-      color: var(--navy-800);
-      border: 1px solid var(--border);
-      cursor: pointer;
-    }
-
-    .btn-mini:hover {
-      background: var(--navy-100);
-    }
-
-    .form-actions {
-      margin-top: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
     }
-
-    .notice {
-      font-size: 0.82rem;
-      color: var(--text-sub);
-      margin-top: 8px;
+    @media (max-width: 820px) {
+      .form-grid { grid-template-columns: repeat(2, 1fr); }
     }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 999px;
-      font-size: 0.74rem;
-      font-weight: 700;
-      border: 1px solid transparent;
+    @media (max-width: 480px) {
+      .form-grid { grid-template-columns: 1fr; }
     }
-
-    .badge-urgent {
-      background: var(--danger-bg);
-      color: var(--danger-text);
-      border-color: var(--danger-border);
-    }
-
-    .badge-soon {
-      background: var(--warn-bg);
-      color: var(--warn-text);
-      border-color: var(--warn-border);
-    }
-
-    .badge-normal {
-      background: var(--ok-bg);
-      color: var(--ok-text);
-      border-color: var(--ok-border);
-    }
-
-    .badge-done {
-      background: var(--success-bg);
-      color: var(--success-text);
-      border-color: var(--success-border);
-    }
-
-    .badge-muted {
-      background: #f1f5f9;
-      color: #64748b;
-      border-color: #e2e8f0;
-    }
-
-    .date-sub {
-      display: block;
-      font-size: 0.74rem;
-      color: var(--text-sub);
-      margin-top: 2px;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field.span-2 { grid-column: span 2; }
+    @media (max-width: 480px) { .field.span-2 { grid-column: span 1; } }
+    .field label { font-size: 0.76rem; font-weight: 600; color: var(--muted); }
+    .field input, .field select {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       font-size: 0.86rem;
+      background: #fff;
     }
 
-    th, td {
-      padding: 10px 8px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-      vertical-align: middle;
+    /* Filter */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .filter-bar input, .filter-bar select {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.83rem;
     }
 
-    th {
-      background: var(--navy-50);
-      color: var(--navy-900);
-      font-weight: 700;
-      font-size: 0.78rem;
-      white-space: nowrap;
-    }
-
-    td input, td select {
-      padding: 6px 8px;
-      font-size: 0.84rem;
-    }
-
-    .mobile-list {
-      display: none;
-    }
-
-    @media (max-width: 860px) {
-      .table-wrap {
-        display: none;
-      }
-      .mobile-list {
-        display: grid;
-        gap: 12px;
-      }
-    }
-
-    .mobile-item {
+    /* Company Cards */
+    .company-list { display: flex; flex-direction: column; gap: 10px; }
+    .company-item {
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 14px;
-      background: #ffffff;
-      display: grid;
-      gap: 10px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-
-    .mobile-item-head {
+    .company-item.urgent { border-left: 5px solid var(--danger); background: #fffafa; }
+    .company-item.soon { border-left: 5px solid var(--warn); }
+    .company-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .company-name-wrap {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: 8px;
       flex-wrap: wrap;
     }
-
-    .mobile-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+    .company-name { font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
     }
+    .badge-s { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .badge-a { background: #e0f2fe; color: #075985; }
+    .badge-b { background: #f1f5f9; color: #475569; }
+    .badge-fire { background: var(--danger); color: #fff; }
+    .badge-phase { background: var(--navy); color: #fff; }
+    .badge-rejected { background: #e2e8f0; color: #64748b; }
+    .badge-offer { background: var(--success); color: #fff; }
 
-    .inline-copy {
+    .meta-row {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.82rem;
+      color: var(--text);
+    }
+    .flow-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      color: #334155;
+    }
+    .item-actions {
+      display: flex;
+      flex-wrap: wrap;
       gap: 6px;
-      margin-top: 4px;
+      align-items: center;
+      margin-top: 2px;
     }
-
-    .link-open {
-      font-size: 0.76rem;
-      color: var(--navy-700);
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .link-open:hover {
-      text-decoration: underline;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 28px 12px;
-      color: var(--text-sub);
-      font-size: 0.9rem;
-    }
-
     .toast {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: var(--navy-900);
-      color: #ffffff;
+      background: var(--navy);
+      color: #fff;
       padding: 10px 16px;
       border-radius: 8px;
-      font-size: 0.85rem;
-      box-shadow: 0 6px 20px rgba(15, 35, 66, 0.25);
+      font-size: 0.84rem;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(8px);
-      transition: opacity 0.2s, transform 0.2s;
-      z-index: 100;
+      transition: opacity 0.2s;
+      z-index: 50;
     }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
-  <header class="app-header">
-    <div class="header-inner">
-      <div>
-        <h1 class="app-title">就活企業管理・ES締切チェッカー</h1>
-        <p class="app-subtitle">未提出ESを締切順に優先表示・スプレッドシート連携＆デモモード対応</p>
-      </div>
-      <div class="header-actions">
-        <button type="button" class="btn btn-demo" id="toggleDemoBtn">デモデータ読込</button>
-        <div class="sync-status-bar">
-          <span id="syncStatusText">ローカル保存モード</span>
-          <span id="lastSyncTime"></span>
-        </div>
-      </div>
-    </div>
-  </header>
 
-  <div class="demo-banner" id="demoBanner">
-    <div class="demo-banner-inner">
-      <span><strong>デモモード表示中：</strong>採用担当者向けサンプルデータ（7社）を表示しています。本番のスプレッドシート・保存データは変更されません。</span>
-      <button type="button" class="btn btn-secondary" id="exitDemoBtn">本番データに戻る</button>
+<header>
+  <div class="header-inner">
+    <div class="title-area">
+      <h1>就活マネジメント・ダッシュボード</h1>
+      <p>選考フロー統合・ファネル通過率分析・優先度自動判定</p>
+    </div>
+    <div class="header-actions">
+      <span id="connStatus" class="status-pill">ローカル保存モード</span>
+      <button class="btn-demo btn-sm" onclick="toggleDemoMode()" id="demoBtn">デモデータ読込</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- GAS Connection -->
+  <div class="card">
+    <div class="gas-bar">
+      <input type="text" id="gasUrlInput" placeholder="GAS ウェブアプリURL (https://script.google.com/macros/s/.../exec)" />
+      <button class="btn-navy" onclick="saveGasUrl()">URLを保存して同期</button>
+      <button class="btn-outline" onclick="syncFromSheet()">再読込</button>
     </div>
   </div>
 
-  <main class="container">
-    <!-- 進捗ダッシュボード -->
-    <section class="kpi-grid" aria-label="就活進捗ダッシュボード">
-      <button type="button" class="kpi-card" id="kpiAllCard">
-        <span class="kpi-label">登録企業数</span>
-        <span class="kpi-value" id="kpiTotalCount">0</span>
-        <span class="kpi-hint">クリックで全件表示</span>
-      </button>
-      <button type="button" class="kpi-card" id="kpiUrgentCard">
-        <span class="kpi-label">7日以内の未提出ES</span>
-        <span class="kpi-value" id="kpiUrgentCount">0</span>
-        <span class="kpi-hint">クリックでES作成中を表示</span>
-      </button>
-      <button type="button" class="kpi-card" id="kpiProgressCard">
-        <span class="kpi-label">選考進行中</span>
-        <span class="kpi-value" id="kpiProgressCount">0</span>
-        <span class="kpi-hint">ES提出済〜最終面接</span>
-      </button>
-      <button type="button" class="kpi-card" id="kpiOfferCard">
-        <span class="kpi-label">内定獲得</span>
-        <span class="kpi-value" id="kpiOfferCount">0</span>
-        <span class="kpi-hint">クリックで内定企業を表示</span>
-      </button>
-    </section>
-
-    <!-- GAS連携設定 -->
-    <section class="card" id="gasSection">
-      <h2 class="card-title">
-        <span>スプレッドシート連携（GAS URL）</span>
-        <button type="button" class="btn btn-secondary" id="reloadFromGasBtn">今すぐ読み込み</button>
-      </h2>
-      <div class="gas-row">
-        <input
-          type="url"
-          id="gasUrlInput"
-          placeholder="https://script.google.com/macros/s/xxxxx/exec"
-          aria-label="GASウェブアプリURL"
-        />
-        <button type="button" class="btn btn-primary" id="saveGasUrlBtn">URLを保存して同期</button>
+  <!-- Dashboard: KPI + Funnel -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span>進捗サマリー（アクション指標）</span></div>
+      <div class="kpi-grid">
+        <div class="kpi-box">
+          <div class="kpi-label">エントリー総数</div>
+          <div class="kpi-val" id="kpiTotal">0社</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-label">最優先タスク（S志望×7日以内）</div>
+          <div class="kpi-val danger" id="kpiPriority">0件</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-label">未提出ES・直近予定</div>
+          <div class="kpi-val" id="kpiPending">0件</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-label">選考中 / 内定</div>
+          <div class="kpi-val success" id="kpiActive">0社</div>
+        </div>
       </div>
-      <p class="notice">
-        URLを設定すると、追加・編集・削除した内容がスプレッドシート（<code>企業管理</code> シートのA〜H列）に自動反映されます。
-      </p>
-    </section>
+    </div>
 
-    <!-- 新規追加フォーム -->
-    <section class="card">
-      <h2 class="card-title">企業を追加する</h2>
-      <form id="addCompanyForm">
-        <div class="form-grid">
-          <div>
-            <label for="companyNameInput">企業名 *</label>
-            <input type="text" id="companyNameInput" placeholder="例：株式会社〇〇" required />
-          </div>
-          <div>
-            <label for="priorityInput">志望度 *</label>
-            <select id="priorityInput">
-              <option value="高">高</option>
-              <option value="中" selected>中</option>
-              <option value="低">低</option>
-            </select>
-          </div>
-          <div>
-            <label for="statusInput">選考ステータス *</label>
-            <select id="statusInput">
-              <option value="ES作成中" selected>ES作成中</option>
-              <option value="ES提出済">ES提出済</option>
-              <option value="一次面接">一次面接</option>
-              <option value="二次面接">二次面接</option>
-              <option value="最終面接">最終面接</option>
-              <option value="内定">内定</option>
-              <option value="見送り">見送り</option>
-            </select>
-          </div>
-          <div>
-            <label for="deadlineInput">ES締切日</label>
-            <input type="date" id="deadlineInput" />
-          </div>
-          <div>
-            <label for="mypageUrlInput">マイページURL</label>
-            <input type="url" id="mypageUrlInput" placeholder="https://..." />
-          </div>
-          <div>
-            <label for="loginIdInput">ログインID</label>
-            <input type="text" id="loginIdInput" placeholder="例：taro@example.com" />
-          </div>
-          <div class="form-span-2">
-            <label for="memoInput">メモ</label>
-            <input type="text" id="memoInput" placeholder="例：Webテストあり、志望動機の要点など" />
-          </div>
-        </div>
-        <div class="form-actions">
-          <span class="notice" style="margin:0;">※ 「ES作成中（未提出）」が締切の近い順に最優先で並びます。</span>
-          <button type="submit" class="btn btn-primary">＋ 企業を追加</button>
-        </div>
-      </form>
-    </section>
+    <div class="card">
+      <div class="card-title"><span>選考ファネル分析（通過率ボトルネック診断）</span></div>
+      <div id="funnelContainer"></div>
+      <div class="bottleneck-box" id="bottleneckAdvice">データを登録すると選考段階ごとの通過率と改善ポイントを自動診断します。</div>
+    </div>
+  </div>
 
-    <!-- 絞り込み＆企業一覧 -->
-    <section class="card">
-      <h2 class="card-title">
-        <span>登録企業一覧（未提出の締切順）</span>
-        <span id="companyCountBadge" class="badge badge-normal">0社表示</span>
-      </h2>
-
-      <div class="filter-grid" style="margin-bottom:14px;">
-        <div>
-          <label for="searchKeywordInput">キーワード検索（企業名・メモ）</label>
-          <input type="search" id="searchKeywordInput" placeholder="企業名やキーワードで検索..." />
-        </div>
-        <div>
-          <label for="filterPrioritySelect">志望度フィルター</label>
-          <select id="filterPrioritySelect">
-            <option value="ALL">すべて</option>
-            <option value="高">高</option>
-            <option value="中">中</option>
-            <option value="低">低</option>
-          </select>
-        </div>
-        <div>
-          <label for="filterStatusSelect">ステータスフィルター</label>
-          <select id="filterStatusSelect">
-            <option value="ALL">すべて</option>
-            <option value="ES作成中">ES作成中</option>
-            <option value="ES提出済">ES提出済</option>
-            <option value="一次面接">一次面接</option>
-            <option value="二次面接">二次面接</option>
-            <option value="最終面接">最終面接</option>
-            <option value="内定">内定</option>
-            <option value="見送り">見送り</option>
-          </select>
-        </div>
-        <label class="checkbox-label">
-          <input type="checkbox" id="hideClosedCheckbox" />
-          <span>内定・見送りを隠す</span>
-        </label>
-        <button type="button" class="btn btn-secondary" id="resetFilterBtn">条件リセット</button>
+  <!-- Add / Edit Form -->
+  <div class="card">
+    <div class="card-title">
+      <span id="formHeaderTitle">新規企業の登録</span>
+      <button class="btn-outline btn-sm" id="cancelEditBtn" style="display:none;" onclick="resetForm()">編集をキャンセル</button>
+    </div>
+    <input type="hidden" id="editId" />
+    <div class="form-grid">
+      <div class="field">
+        <label>企業名 *</label>
+        <input type="text" id="fCompany" placeholder="例：株式会社〇〇" />
       </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>締切状況</th>
-              <th>企業名</th>
-              <th>志望度</th>
-              <th>ステータス</th>
-              <th>ES締切日</th>
-              <th>マイページURL</th>
-              <th>ログインID</th>
-              <th>メモ</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="companyTableBody"></tbody>
-        </table>
+      <div class="field">
+        <label>志望度</label>
+        <select id="fPriority">
+          <option value="S">S（第一志望群）</option>
+          <option value="A" selected>A（本命・有力）</option>
+          <option value="B">B（併願・検討）</option>
+        </select>
       </div>
+      <div class="field">
+        <label>現在の選考フェーズ</label>
+        <select id="fPhase">
+          <option value="ES準備">ES準備</option>
+          <option value="ES提出済">ES提出済</option>
+          <option value="Webテスト">Webテスト</option>
+          <option value="一次面接">一次面接</option>
+          <option value="二次面接">二次面接</option>
+          <option value="最終面接">最終面接</option>
+          <option value="内定">内定</option>
+          <option value="お見送り">お見送り</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>ES締切日</label>
+        <input type="date" id="fDeadline" />
+      </div>
+      <div class="field">
+        <label>次回面接・試験日</label>
+        <input type="date" id="fNextDate" />
+      </div>
+      <div class="field">
+        <label>ES提出状況</label>
+        <select id="fStatus">
+          <option value="未提出">未提出</option>
+          <option value="提出済">提出済</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>マイページURL</label>
+        <input type="url" id="fUrl" placeholder="https://..." />
+      </div>
+      <div class="field">
+        <label>ログインID</label>
+        <input type="text" id="fLoginId" placeholder="IDやメアド" />
+      </div>
+      <div class="field span-2">
+        <label>選考フロー（全体像）</label>
+        <input type="text" id="fFlow" placeholder="例：ES → SPI → 一次(個人) → 二次(GD) → 最終" />
+      </div>
+      <div class="field span-2">
+        <label>対策メモ・設問テーマ</label>
+        <input type="text" id="fMemo" placeholder="例：ガクチカ400字、志望動機300字 / 逆質問準備" />
+      </div>
+    </div>
+    <div style="margin-top: 12px; text-align: right;">
+      <button class="btn-primary" onclick="handleSaveItem()" id="submitBtn">企業を追加する</button>
+    </div>
+  </div>
 
-      <div class="mobile-list" id="companyMobileList"></div>
-    </section>
-  </main>
+  <!-- Filter & List -->
+  <div class="card">
+    <div class="card-title"><span>登録企業一覧（優先度・期限順）</span></div>
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="企業名・フロー・メモ検索..." oninput="render()" />
+      <select id="filterPriority" onchange="render()">
+        <option value="ALL">志望度：すべて</option>
+        <option value="S">志望度 S のみ</option>
+        <option value="A">志望度 A のみ</option>
+        <option value="B">志望度 B のみ</option>
+      </select>
+      <select id="filterPhase" onchange="render()">
+        <option value="ACTIVE">選考中のみ（お見送り除外）</option>
+        <option value="ALL">すべてのフェーズ</option>
+        <option value="ES準備">ES準備</option>
+        <option value="Webテスト">Webテスト</option>
+        <option value="面接">面接段階（一次〜最終）</option>
+        <option value="内定">内定</option>
+        <option value="お見送り">お見送り</option>
+      </select>
+    </div>
+    <div class="company-list" id="companyList"></div>
+  </div>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
 
-  <script>
-    const STORAGE_KEY_COMPANIES = 'shukatsu_companies_v1';
-    const STORAGE_KEY_GAS_URL = 'shukatsu_gas_url_v1';
-    const STATUS_OPTIONS = ['ES作成中', 'ES提出済', '一次面接', '二次面接', '最終面接', '内定', '見送り'];
-    const PRIORITY_OPTIONS = ['高', '中', '低'];
-    const PROGRESS_STATUSES = ['ES提出済', '一次面接', '二次面接', '最終面接'];
-    const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+<div class="toast" id="toast"></div>
 
-    let companies = [];
-    let demoCompanies = [];
-    let isDemoMode = false;
-    let gasUrl = '';
+<script>
+  const STORAGE_KEY = 'shukatsu_v2_items';
+  const GAS_KEY = 'shukatsu_gas_url';
+  let items = [];
+  let isDemo = false;
 
-    const el = {
-      toggleDemoBtn: document.getElementById('toggleDemoBtn'),
-      exitDemoBtn: document.getElementById('exitDemoBtn'),
-      demoBanner: document.getElementById('demoBanner'),
-      gasSection: document.getElementById('gasSection'),
-      gasUrlInput: document.getElementById('gasUrlInput'),
-      saveGasUrlBtn: document.getElementById('saveGasUrlBtn'),
-      reloadFromGasBtn: document.getElementById('reloadFromGasBtn'),
-      syncStatusText: document.getElementById('syncStatusText'),
-      lastSyncTime: document.getElementById('lastSyncTime'),
-      kpiAllCard: document.getElementById('kpiAllCard'),
-      kpiUrgentCard: document.getElementById('kpiUrgentCard'),
-      kpiProgressCard: document.getElementById('kpiProgressCard'),
-      kpiOfferCard: document.getElementById('kpiOfferCard'),
-      kpiTotalCount: document.getElementById('kpiTotalCount'),
-      kpiUrgentCount: document.getElementById('kpiUrgentCount'),
-      kpiProgressCount: document.getElementById('kpiProgressCount'),
-      kpiOfferCount: document.getElementById('kpiOfferCount'),
-      addCompanyForm: document.getElementById('addCompanyForm'),
-      companyNameInput: document.getElementById('companyNameInput'),
-      priorityInput: document.getElementById('priorityInput'),
-      statusInput: document.getElementById('statusInput'),
-      deadlineInput: document.getElementById('deadlineInput'),
-      mypageUrlInput: document.getElementById('mypageUrlInput'),
-      loginIdInput: document.getElementById('loginIdInput'),
-      memoInput: document.getElementById('memoInput'),
-      searchKeywordInput: document.getElementById('searchKeywordInput'),
-      filterPrioritySelect: document.getElementById('filterPrioritySelect'),
-      filterStatusSelect: document.getElementById('filterStatusSelect'),
-      hideClosedCheckbox: document.getElementById('hideClosedCheckbox'),
-      resetFilterBtn: document.getElementById('resetFilterBtn'),
-      companyCountBadge: document.getElementById('companyCountBadge'),
-      companyTableBody: document.getElementById('companyTableBody'),
-      companyMobileList: document.getElementById('companyMobileList'),
-      toast: document.getElementById('toast')
+  const DEMO_ITEMS = [
+    { id: 'd1', company: '第一志望テック株式会社', priority: 'S', phase: '二次面接', deadline: offsetDate(-10), nextDate: offsetDate(2), status: '提出済', url: 'https://example.com', loginId: 'taro_2027', flow: 'ES → 玉手箱 → 一次(現場) → 二次(部長) → 最終(役員)', memo: '一次では開発アプリの課題設計を深掘りされた。二次は事業貢献を語る。' },
+    { id: 'd2', company: 'グローバル総合商社A', priority: 'S', phase: 'ES準備', deadline: offsetDate(3), nextDate: '', status: '未提出', url: 'https://example.com', loginId: 'yamada01', flow: 'ES → Webテスト → GD → 一次 → 二次 → 最終', memo: '設問：困難を乗り越えた経験(400字)。数値を入れて推敲中。' },
+    { id: 'd3', company: 'フロンティアITソリューションズ', priority: 'A', phase: 'Webテスト', deadline: offsetDate(-3), nextDate: offsetDate(4), status: '提出済', url: 'https://example.com', loginId: 't_yamada', flow: 'ES → SPI(テストセンター) → 一次 → 最終', memo: 'SPI言語・非言語の対策完了。期限までに受検予約確定。' },
+    { id: 'd4', company: 'ネクストクラウド株式会社', priority: 'A', phase: '一次面接', deadline: offsetDate(-12), nextDate: offsetDate(6), status: '提出済', url: 'https://example.com', loginId: 'yamada_nc', flow: 'ES → 一次(オンライン) → 最終(対面)', memo: 'GitHub Pagesのデモ画面を共有できるよう準備済み。' },
+    { id: 'd5', company: 'イノベーション金融グループ', priority: 'B', phase: '内定', deadline: offsetDate(-25), nextDate: '', status: '提出済', url: 'https://example.com', loginId: 'fin_2027', flow: 'ES → テスト → 一次 → 二次 → 最終', memo: 'DX推進部門で内々定獲得。' },
+    { id: 'd6', company: 'スタンダード製造株式会社', priority: 'B', phase: 'お見送り', deadline: offsetDate(-20), nextDate: '', status: '提出済', url: 'https://example.com', loginId: 'mfg_88', flow: 'ES → SPI → 一次面接', memo: '一次面接で企業研究の深さが不足していたため改善。' },
+    { id: 'd7', company: 'デジタルコンサルティングB', priority: 'S', phase: 'ES準備', deadline: offsetDate(6), nextDate: '', status: '未提出', url: 'https://example.com', loginId: 'dc_taro', flow: 'ES → ケース面接 → 一次 → 最終', memo: 'フェルミ推定とケース対策を並行して進める。' },
+    { id: 'd8', company: 'エンタープライズシステムズ', priority: 'A', phase: 'ES提出済', deadline: offsetDate(-2), nextDate: '', status: '提出済', url: 'https://example.com', loginId: 'ent_09', flow: 'ES → Webテスト → 一次 → 最終', memo: '結果待ち（来週金曜までに連絡予定）。' }
+  ];
+
+  function offsetDate(days) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  }
+
+  window.onload = async () => {
+    const savedUrl = localStorage.getItem(GAS_KEY) || '';
+    document.getElementById('gasUrlInput').value = savedUrl;
+    if (savedUrl) {
+      await syncFromSheet();
+    } else {
+      items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      render();
+    }
+  };
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function saveGasUrl() {
+    const url = document.getElementById('gasUrlInput').value.trim();
+    if (!url) {
+      localStorage.removeItem(GAS_KEY);
+      updateConnPill(false);
+      showToast('GAS URLを解除しました');
+      return;
+    }
+    localStorage.setItem(GAS_KEY, url);
+    isDemo = false;
+    document.getElementById('demoBtn').textContent = 'デモデータ読込';
+    syncFromSheet();
+  }
+
+  function updateConnPill(connected) {
+    const pill = document.getElementById('connStatus');
+    if (isDemo) {
+      pill.textContent = 'デモモード表示中（本番データ非表示）';
+      pill.className = 'status-pill demo';
+    } else if (connected) {
+      pill.textContent = 'スプレッドシート連携中';
+      pill.className = 'status-pill connected';
+    } else {
+      pill.textContent = 'ローカル保存モード';
+      pill.className = 'status-pill';
+    }
+  }
+
+  async function syncFromSheet() {
+    const url = localStorage.getItem(GAS_KEY);
+    if (!url) {
+      showToast('GAS URLが設定されていません');
+      return;
+    }
+    try {
+      showToast('同期中...');
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.status === 'ok') {
+        items = json.data || [];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        isDemo = false;
+        document.getElementById('demoBtn').textContent = 'デモデータ読込';
+        updateConnPill(true);
+        render();
+        showToast('スプレッドシートと同期しました');
+      }
+    } catch (e) {
+      updateConnPill(false);
+      showToast('同期に失敗しました。URLとGASデプロイを確認してください');
+    }
+  }
+
+  function toggleDemoMode() {
+    isDemo = !isDemo;
+    const btn = document.getElementById('demoBtn');
+    if (isDemo) {
+      btn.textContent = '本番データに戻る';
+      showToast('デモデータを読み込みました');
+    } else {
+      btn.textContent = 'デモデータ読込';
+      showToast('本番データに戻りました');
+    }
+    updateConnPill(!!localStorage.getItem(GAS_KEY));
+    render();
+  }
+
+  function getActiveList() {
+    return isDemo ? DEMO_ITEMS : items;
+  }
+
+  function daysUntil(dateStr) {
+    if (!dateStr) return null;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const target = new Date(dateStr + 'T00:00:00');
+    return Math.round((target - today) / (1000 * 60 * 60 * 24));
+  }
+
+  function getRelevantDate(item) {
+    if (item.phase === 'ES準備' && item.deadline) return { label: 'ES締切', date: item.deadline };
+    if (item.nextDate) return { label: '次回予定', date: item.nextDate };
+    if (item.deadline) return { label: 'ES締切', date: item.deadline };
+    return null;
+  }
+
+  function isHighPriorityTask(item) {
+    if (item.phase === 'お見送り' || item.phase === '内定') return false;
+    const rel = getRelevantDate(item);
+    if (!rel) return false;
+    const diff = daysUntil(rel.date);
+    return item.priority === 'S' && diff !== null && diff <= 7;
+  }
+
+  async function handleSaveItem() {
+    if (isDemo) {
+      showToast('デモモード中は保存できません');
+      return;
+    }
+    const company = document.getElementById('fCompany').value.trim();
+    if (!company) {
+      showToast('企業名を入力してください');
+      return;
+    }
+    const editId = document.getElementById('editId').value;
+    const item = {
+      id: editId || ('id_' + Date.now()),
+      company,
+      priority: document.getElementById('fPriority').value,
+      phase: document.getElementById('fPhase').value,
+      deadline: document.getElementById('fDeadline').value,
+      nextDate: document.getElementById('fNextDate').value,
+      status: document.getElementById('fStatus').value,
+      url: document.getElementById('fUrl').value.trim(),
+      loginId: document.getElementById('fLoginId').value.trim(),
+      flow: document.getElementById('fFlow').value.trim(),
+      memo: document.getElementById('fMemo').value.trim()
     };
 
-    function getActiveList() {
-      return isDemoMode ? demoCompanies : companies;
+    if (editId) {
+      items = items.map(x => x.id === editId ? item : x);
+    } else {
+      items.push(item);
     }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    render();
+    resetForm();
 
-    function setActiveList(nextList) {
-      if (isDemoMode) {
-        demoCompanies = nextList;
-      } else {
-        companies = nextList;
-        saveLocal();
-      }
-    }
-
-    function addDaysToToday(offsetDays) {
-      const d = new Date();
-      d.setDate(d.getDate() + offsetDays);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
-    }
-
-    function createSampleDemoData() {
-      return [
-        {
-          id: 'demo_1',
-          companyName: '株式会社ネクストクラウド',
-          priority: '高',
-          status: 'ES作成中',
-          deadline: addDaysToToday(2),
-          mypageUrl: 'https://example.com/mypage/nextcloud',
-          loginId: 'career_demo_01',
-          memo: '志望動機（DX推進・課題解決）を最終推敲中'
-        },
-        {
-          id: 'demo_2',
-          companyName: 'ブルーオーシャン商事株式会社',
-          priority: '高',
-          status: 'ES作成中',
-          deadline: addDaysToToday(5),
-          mypageUrl: 'https://example.com/mypage/blueocean',
-          loginId: 'demo.student@example.jp',
-          memo: '設問3つ：学生時代に力を入れたこと・強み・入社後やりたいこと'
-        },
-        {
-          id: 'demo_3',
-          companyName: 'アーバンペイメント株式会社',
-          priority: '中',
-          status: 'ES作成中',
-          deadline: addDaysToToday(12),
-          mypageUrl: 'https://example.com/mypage/urbanpay',
-          loginId: 'up_2027_084',
-          memo: 'Webテスト受検期限も同日なので早めに完了させる'
-        },
-        {
-          id: 'demo_4',
-          companyName: 'フロンティアデータ株式会社',
-          priority: '高',
-          status: '一次面接',
-          deadline: addDaysToToday(-3),
-          mypageUrl: 'https://example.com/mypage/frontier',
-          loginId: 'fd_user_19',
-          memo: '来週火曜 14:00 オンライン面接（人事・現場社員）'
-        },
-        {
-          id: 'demo_5',
-          companyName: 'グリーンロジスティクス株式会社',
-          priority: '中',
-          status: 'ES提出済',
-          deadline: addDaysToToday(-1),
-          mypageUrl: 'https://example.com/mypage/greenlogi',
-          loginId: 'gl_entry_55',
-          memo: '合否連絡待ち（1週間目安）'
-        },
-        {
-          id: 'demo_6',
-          companyName: 'サンライズシステムズ株式会社',
-          priority: '高',
-          status: '内定',
-          deadline: addDaysToToday(-14),
-          mypageUrl: 'https://example.com/mypage/sunrise',
-          loginId: 'sr_offer_03',
-          memo: 'オファー面談の日程調整中'
-        },
-        {
-          id: 'demo_7',
-          companyName: 'メトロポリタン企画株式会社',
-          priority: '低',
-          status: '見送り',
-          deadline: addDaysToToday(-8),
-          mypageUrl: '',
-          loginId: '',
-          memo: '書類選考結果受領済み'
-        }
-      ];
-    }
-
-    function showToast(message) {
-      el.toast.textContent = message;
-      el.toast.classList.add('show');
-      clearTimeout(showToast._timer);
-      showToast._timer = setTimeout(() => {
-        el.toast.classList.remove('show');
-      }, 2400);
-    }
-
-    function escapeHtml(str) {
-      return String(str || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
-
-    function isSafeHttpUrl(url) {
+    const gasUrl = localStorage.getItem(GAS_KEY);
+    if (gasUrl) {
       try {
-        const parsed = new URL(String(url || '').trim());
-        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-      } catch {
-        return false;
+        await fetch(gasUrl, {
+          method: 'POST',
+          body: JSON.stringify({ action: editId ? 'update' : 'add', item })
+        });
+        showToast('スプレッドシートに保存しました');
+      } catch (e) {
+        showToast('ローカル保存完了（シート同期は再読込で確認してください）');
       }
+    } else {
+      showToast('保存しました');
     }
+  }
 
-    function getTodayDateString() {
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      const d = String(now.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
+  function startEdit(id) {
+    const target = getActiveList().find(x => x.id === id);
+    if (!target) return;
+    document.getElementById('editId').value = target.id;
+    document.getElementById('fCompany').value = target.company;
+    document.getElementById('fPriority').value = target.priority || 'A';
+    document.getElementById('fPhase').value = target.phase || 'ES準備';
+    document.getElementById('fDeadline').value = target.deadline || '';
+    document.getElementById('fNextDate').value = target.nextDate || '';
+    document.getElementById('fStatus').value = target.status || '未提出';
+    document.getElementById('fUrl').value = target.url || '';
+    document.getElementById('fLoginId').value = target.loginId || '';
+    document.getElementById('fFlow').value = target.flow || '';
+    document.getElementById('fMemo').value = target.memo || '';
+
+    document.getElementById('formHeaderTitle').textContent = '企業情報の編集：' + target.company;
+    document.getElementById('submitBtn').textContent = '変更を保存する';
+    document.getElementById('cancelEditBtn').style.display = 'inline-block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetForm() {
+    document.getElementById('editId').value = '';
+    document.getElementById('fCompany').value = '';
+    document.getElementById('fPriority').value = 'A';
+    document.getElementById('fPhase').value = 'ES準備';
+    document.getElementById('fDeadline').value = '';
+    document.getElementById('fNextDate').value = '';
+    document.getElementById('fStatus').value = '未提出';
+    document.getElementById('fUrl').value = '';
+    document.getElementById('fLoginId').value = '';
+    document.getElementById('fFlow').value = '';
+    document.getElementById('fMemo').value = '';
+    document.getElementById('formHeaderTitle').textContent = '新規企業の登録';
+    document.getElementById('submitBtn').textContent = '企業を追加する';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+  }
+
+  async function deleteItem(id) {
+    if (isDemo) {
+      showToast('デモモード中は削除できません');
+      return;
     }
+    if (!confirm('この企業データを削除しますか？')) return;
+    items = items.filter(x => x.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    render();
 
-    function calcDiffDays(deadlineStr) {
-      if (!deadlineStr) return null;
-      const match = String(deadlineStr).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (!match) return null;
-      const todayParts = getTodayDateString().split('-').map(Number);
-      const todayUtc = Date.UTC(todayParts[0], todayParts[1] - 1, todayParts[2]);
-      const targetUtc = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-      return Math.round((targetUtc - todayUtc) / (1000 * 60 * 60 * 24));
-    }
-
-    function formatDateWithWeekday(deadlineStr) {
-      const match = String(deadlineStr || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (!match) return '';
-      const d = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-      if (isNaN(d.getTime())) return '';
-      return `${Number(match[2])}/${Number(match[3])}(${WEEKDAYS[d.getDay()]})`;
-    }
-
-    function getDeadlineBadge(item) {
-      if (item.status !== 'ES作成中') {
-        return `<span class="badge badge-done">${escapeHtml(item.status)}</span>`;
-      }
-      const diff = calcDiffDays(item.deadline);
-      if (diff === null) {
-        return '<span class="badge badge-muted">締切未設定</span>';
-      }
-      if (diff < 0) {
-        return `<span class="badge badge-urgent">期限超過（${Math.abs(diff)}日前）</span>`;
-      }
-      if (diff === 0) {
-        return '<span class="badge badge-urgent">本日締切！</span>';
-      }
-      if (diff <= 3) {
-        return `<span class="badge badge-urgent">あと${diff}日</span>`;
-      }
-      if (diff <= 7) {
-        return `<span class="badge badge-soon">あと${diff}日</span>`;
-      }
-      return `<span class="badge badge-normal">あと${diff}日</span>`;
-    }
-
-    function getSortTier(item) {
-      // 0: 未提出（ES作成中）で締切あり
-      // 1: 未提出（ES作成中）で締切未設定
-      // 2: 選考進行中（ES提出済〜最終面接）または内定
-      // 3: 見送り
-      if (item.status === '見送り') return 3;
-      if (item.status === 'ES作成中') {
-        return item.deadline ? 0 : 1;
-      }
-      return 2;
-    }
-
-    function sortCompaniesSmart(list) {
-      return [...list].sort((a, b) => {
-        const tierA = getSortTier(a);
-        const tierB = getSortTier(b);
-        if (tierA !== tierB) return tierA - tierB;
-
-        if (a.deadline && b.deadline && a.deadline !== b.deadline) {
-          return a.deadline.localeCompare(b.deadline);
-        }
-        if (a.deadline && !b.deadline) return -1;
-        if (!a.deadline && b.deadline) return 1;
-
-        return String(a.companyName).localeCompare(String(b.companyName), 'ja');
-      });
-    }
-
-    function updateDashboard(list) {
-      const total = list.length;
-      const urgentUnsubmitted = list.filter(item => {
-        if (item.status !== 'ES作成中') return false;
-        const diff = calcDiffDays(item.deadline);
-        return diff !== null && diff <= 7;
-      }).length;
-      const inProgress = list.filter(item => PROGRESS_STATUSES.includes(item.status)).length;
-      const offers = list.filter(item => item.status === '内定').length;
-
-      el.kpiTotalCount.textContent = String(total);
-      el.kpiUrgentCount.textContent = String(urgentUnsubmitted);
-      el.kpiProgressCount.textContent = String(inProgress);
-      el.kpiOfferCount.textContent = String(offers);
-    }
-
-    function getFilteredSortedCompanies() {
-      const keyword = el.searchKeywordInput.value.trim().toLowerCase();
-      const priorityFilter = el.filterPrioritySelect.value;
-      const statusFilter = el.filterStatusSelect.value;
-      const hideClosed = el.hideClosedCheckbox.checked;
-
-      const filtered = getActiveList().filter(item => {
-        if (priorityFilter !== 'ALL' && item.priority !== priorityFilter) return false;
-        if (statusFilter !== 'ALL' && item.status !== statusFilter) return false;
-        if (hideClosed && (item.status === '見送り' || item.status === '内定')) return false;
-        if (keyword) {
-          const hay = `${item.companyName} ${item.memo} ${item.status} ${item.loginId}`.toLowerCase();
-          if (!hay.includes(keyword)) return false;
-        }
-        return true;
-      });
-
-      return sortCompaniesSmart(filtered);
-    }
-
-    function saveLocal() {
-      localStorage.setItem(STORAGE_KEY_COMPANIES, JSON.stringify(companies));
-    }
-
-    function loadLocal() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY_COMPANIES);
-        const parsed = raw ? JSON.parse(raw) : [];
-        companies = Array.isArray(parsed) ? parsed : [];
-      } catch {
-        companies = [];
-      }
-    }
-
-    function setSyncStatus(text, isSynced = false) {
-      el.syncStatusText.textContent = text;
-      if (isSynced) {
-        const now = new Date();
-        el.lastSyncTime.textContent = `(${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')})`;
-      } else {
-        el.lastSyncTime.textContent = '';
-      }
-    }
-
-    async function fetchFromGas() {
-      if (!gasUrl || isDemoMode) return false;
-      setSyncStatus('同期中...');
-      const res = await fetch(gasUrl, { method: 'GET' });
-      const data = await res.json();
-      if (!data.ok) {
-        throw new Error(data.error || '読み込みに失敗しました');
-      }
-      companies = Array.isArray(data.companies) ? data.companies : [];
-      saveLocal();
-      render();
-      setSyncStatus('スプレッドシート連携中', true);
-      return true;
-    }
-
-    async function postToGas(bodyObj) {
-      if (!gasUrl || isDemoMode) return;
-      setSyncStatus('シートへ保存中...');
-      const res = await fetch(gasUrl, {
+    const gasUrl = localStorage.getItem(GAS_KEY);
+    if (gasUrl) {
+      await fetch(gasUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(bodyObj)
+        body: JSON.stringify({ action: 'delete', id })
       });
-      const data = await res.json();
-      if (!data.ok) {
-        throw new Error(data.error || 'スプレッドシートへの保存に失敗しました');
+    }
+    showToast('削除しました');
+  }
+
+  function copyText(txt) {
+    if (!txt) return;
+    navigator.clipboard.writeText(txt);
+    showToast('IDをコピーしました：' + txt);
+  }
+
+  function renderFunnel(list) {
+    const total = list.length;
+    const submitted = list.filter(x => x.phase !== 'ES準備' || x.status === '提出済').length;
+    const passedDoc = list.filter(x => ['一次面接','二次面接','最終面接','内定'].includes(x.phase)).length;
+    const passedFirst = list.filter(x => ['二次面接','最終面接','内定'].includes(x.phase)).length;
+    const offer = list.filter(x => x.phase === '内定').length;
+
+    const stages = [
+      { label: '① ES提出済（応募母数）', count: submitted, base: total },
+      { label: '② 書類・Webテスト通過（面接到達）', count: passedDoc, base: submitted },
+      { label: '③ 一次面接通過（二次・最終到達）', count: passedFirst, base: passedDoc },
+      { label: '④ 内定獲得', count: offer, base: total }
+    ];
+
+    const container = document.getElementById('funnelContainer');
+    container.innerHTML = stages.map(s => {
+      const rate = s.base > 0 ? Math.round((s.count / s.base) * 100) : 0;
+      return `
+        <div class="funnel-row">
+          <div class="funnel-header">
+            <span>${s.label}</span>
+            <span>${s.count}社（${rate}%）</span>
+          </div>
+          <div class="funnel-track">
+            <div class="funnel-fill" style="width:${rate}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const adviceEl = document.getElementById('bottleneckAdvice');
+    if (submitted === 0) {
+      adviceEl.textContent = 'ES提出済みの企業が増えると、書類通過率・面接通過率のボトルネックを自動診断します。';
+      return;
+    }
+    const docRate = Math.round((passedDoc / submitted) * 100);
+    const firstRate = passedDoc > 0 ? Math.round((passedFirst / passedDoc) * 100) : null;
+
+    if (docRate < 50) {
+      adviceEl.innerHTML = `<strong>診断結果：</strong>現在のボトルネックは<strong>「書類・Webテスト段階（通過率 ${docRate}%）」</strong>です。ESの設問適合度とWebテスト対策を優先強化しましょう。`;
+    } else if (firstRate !== null && firstRate < 50) {
+      adviceEl.innerHTML = `<strong>診断結果：</strong>書類通過率は <strong>${docRate}%</strong> と良好ですが、<strong>「一次面接（通過率 ${firstRate}%）」</strong>がボトルネックです。ガクチカの深掘り対策を重点化しましょう。`;
+    } else {
+      adviceEl.innerHTML = `<strong>診断結果：</strong>書類通過率 <strong>${docRate}%</strong> で順調に推移しています。志望度Sの直近タスクに集中しましょう。`;
+    }
+  }
+
+  function render() {
+    const list = getActiveList();
+
+    // KPI
+    document.getElementById('kpiTotal').textContent = list.length + '社';
+    document.getElementById('kpiPriority').textContent = list.filter(isHighPriorityTask).length + '件';
+    document.getElementById('kpiPending').textContent = list.filter(x => x.phase !== 'お見送り' && x.phase !== '内定' && (x.status === '未提出' || x.nextDate)).length + '件';
+    document.getElementById('kpiActive').textContent = list.filter(x => x.phase !== 'お見送り').length + '社';
+
+    renderFunnel(list);
+
+    // Filter
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const fPrio = document.getElementById('filterPriority').value;
+    const fPhase = document.getElementById('filterPhase').value;
+
+    let filtered = list.filter(item => {
+      if (fPrio !== 'ALL' && (item.priority || 'A') !== fPrio) return false;
+      if (fPhase === 'ACTIVE' && item.phase === 'お見送り') return false;
+      if (fPhase === '面接' && !['一次面接','二次面接','最終面接'].includes(item.phase)) return false;
+      if (!['ALL','ACTIVE','面接'].includes(fPhase) && item.phase !== fPhase) return false;
+      if (q) {
+        const hay = `${item.company} ${item.flow || ''} ${item.memo || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
       }
-      if (Array.isArray(data.companies)) {
-        companies = data.companies;
-        saveLocal();
-        render();
-      }
-      setSyncStatus('スプレッドシート連携中', true);
+      return true;
+    });
+
+    // Sort: High Priority -> Active Date Soon -> Priority S/A/B -> Rejected last
+    filtered.sort((a, b) => {
+      const aDone = (a.phase === 'お見送り' || a.phase === '内定') ? 1 : 0;
+      const bDone = (b.phase === 'お見送り' || b.phase === '内定') ? 1 : 0;
+      if (aDone !== bDone) return aDone - bDone;
+
+      const aFire = isHighPriorityTask(a) ? 0 : 1;
+      const bFire = isHighPriorityTask(b) ? 0 : 1;
+      if (aFire !== bFire) return aFire - bFire;
+
+      const aRel = getRelevantDate(a);
+      const bRel = getRelevantDate(b);
+      if (aRel && bRel) return aRel.date.localeCompare(bRel.date);
+      if (aRel) return -1;
+      if (bRel) return 1;
+      return 0;
+    });
+
+    const container = document.getElementById('companyList');
+    if (filtered.length === 0) {
+      container.innerHTML = '<p style="color:#64748b;font-size:0.86rem;">該当する企業がありません。</p>';
+      return;
     }
 
-    function renderSelectOptions(options, selectedValue) {
-      return options.map(opt => {
-        const sel = opt === selectedValue ? ' selected' : '';
-        return `<option value="${escapeHtml(opt)}"${sel}>${escapeHtml(opt)}</option>`;
-      }).join('');
-    }
+    container.innerHTML = filtered.map(item => {
+      const prio = item.priority || 'A';
+      const prioClass = prio === 'S' ? 'badge-s' : (prio === 'A' ? 'badge-a' : 'badge-b');
+      const fire = isHighPriorityTask(item);
+      const rel = getRelevantDate(item);
+      const diff = rel ? daysUntil(rel.date) : null;
 
-    function render() {
-      const activeList = getActiveList();
-      updateDashboard(activeList);
-
-      el.demoBanner.classList.toggle('active', isDemoMode);
-      el.gasSection.style.display = isDemoMode ? 'none' : '';
-      el.toggleDemoBtn.textContent = isDemoMode ? 'デモモード中' : 'デモデータ読込';
-
-      if (isDemoMode) {
-        setSyncStatus('デモモード表示中');
-      } else if (gasUrl) {
-        setSyncStatus('スプレッドシート連携中');
-      } else {
-        setSyncStatus('ローカル保存モード');
+      let itemClass = 'company-item';
+      let dateText = '日程未設定';
+      if (rel && item.phase !== 'お見送り' && item.phase !== '内定') {
+        if (diff < 0) {
+          dateText = `${rel.label}：${rel.date}（期限超過）`;
+          itemClass += ' urgent';
+        } else if (diff <= 3) {
+          dateText = `${rel.label}：${rel.date}（あと${diff}日）`;
+          itemClass += ' urgent';
+        } else if (diff <= 7) {
+          dateText = `${rel.label}：${rel.date}（あと${diff}日）`;
+          itemClass += ' soon';
+        } else {
+          dateText = `${rel.label}：${rel.date}（あと${diff}日）`;
+        }
+      } else if (rel) {
+        dateText = `${rel.label}：${rel.date}`;
       }
 
-      const sortedFiltered = getFilteredSortedCompanies();
-      el.companyCountBadge.textContent = `${sortedFiltered.length}社表示 / 全${activeList.length}社`;
+      const phaseBadgeClass = item.phase === 'お見送り' ? 'badge-rejected' : (item.phase === '内定' ? 'badge-offer' : 'badge-phase');
 
-      if (sortedFiltered.length === 0) {
-        el.companyTableBody.innerHTML = '<tr><td colspan="9" class="empty-state">条件に一致する企業がありません。フィルターをリセットするか、上のフォームから企業を追加してください。</td></tr>';
-        el.companyMobileList.innerHTML = '<div class="empty-state">条件に一致する企業がありません。フィルターをリセットするか、上のフォームから企業を追加してください。</div>';
-        return;
-      }
-
-      el.companyTableBody.innerHTML = sortedFiltered.map(item => {
-        const safeUrl = isSafeHttpUrl(item.mypageUrl) ? escapeHtml(item.mypageUrl) : '';
-        const weekdayText = formatDateWithWeekday(item.deadline);
-        return `
-          <tr data-id="${escapeHtml(item.id)}">
-            <td>${getDeadlineBadge(item.deadline ? item : item)}</td>
-            <td><input type="text" data-field="companyName" value="${escapeHtml(item.companyName)}" /></td>
-            <td>
-              <select data-field="priority">
-                ${renderSelectOptions(PRIORITY_OPTIONS, item.priority)}
-              </select>
-            </td>
-            <td>
-              <select data-field="status">
-                ${renderSelectOptions(STATUS_OPTIONS, item.status)}
-              </select>
-            </td>
-            <td>
-              <input type="date" data-field="deadline" value="${escapeHtml(item.deadline)}" />
-              ${weekdayText ? `<span class="date-sub">${escapeHtml(weekdayText)}</span>` : ''}
-            </td>
-            <td>
-              <input type="url" data-field="mypageUrl" value="${escapeHtml(item.mypageUrl)}" placeholder="https://..." />
-              <div class="inline-copy">
-                ${safeUrl ? `<a class="link-open" href="${safeUrl}" target="_blank" rel="noopener noreferrer">開く</a>` : ''}
-                ${item.mypageUrl ? `<button type="button" class="btn-mini" data-copy="${escapeHtml(item.mypageUrl)}">URLコピー</button>` : ''}
-              </div>
-            </td>
-            <td>
-              <input type="text" data-field="loginId" value="${escapeHtml(item.loginId)}" placeholder="ログインID" />
-              ${item.loginId ? `<div class="inline-copy"><button type="button" class="btn-mini" data-copy="${escapeHtml(item.loginId)}">IDコピー</button></div>` : ''}
-            </td>
-            <td><input type="text" data-field="memo" value="${escapeHtml(item.memo)}" placeholder="メモ" /></td>
-            <td><button type="button" class="btn-danger" data-delete="${escapeHtml(item.id)}">削除</button></td>
-          </tr>
-        `;
-      }).join('');
-
-      el.companyMobileList.innerHTML = sortedFiltered.map(item => {
-        const safeUrl = isSafeHttpUrl(item.mypageUrl) ? escapeHtml(item.mypageUrl) : '';
-        const weekdayText = formatDateWithWeekday(item.deadline);
-        return `
-          <div class="mobile-item" data-id="${escapeHtml(item.id)}">
-            <div class="mobile-item-head">
-              ${getDeadlineBadge(item)}
-              <button type="button" class="btn-danger" data-delete="${escapeHtml(item.id)}">削除</button>
+      return `
+        <div class="${itemClass}">
+          <div class="company-top">
+            <div class="company-name-wrap">
+              <span class="badge ${prioClass}">志望度 ${prio}</span>
+              <span class="badge ${phaseBadgeClass}">${item.phase || 'ES準備'}</span>
+              ${fire ? '<span class="badge badge-fire">🔥 最優先</span>' : ''}
+              <span class="company-name">${escapeHtml(item.company)}</span>
             </div>
-            <div>
-              <label>企業名</label>
-              <input type="text" data-field="companyName" value="${escapeHtml(item.companyName)}" />
-            </div>
-            <div class="mobile-grid">
-              <div>
-                <label>志望度</label>
-                <select data-field="priority">${renderSelectOptions(PRIORITY_OPTIONS, item.priority)}</select>
-              </div>
-              <div>
-                <label>ステータス</label>
-                <select data-field="status">${renderSelectOptions(STATUS_OPTIONS, item.status)}</select>
-              </div>
-            </div>
-            <div>
-              <label>ES締切日 ${weekdayText ? `（${escapeHtml(weekdayText)}）` : ''}</label>
-              <input type="date" data-field="deadline" value="${escapeHtml(item.deadline)}" />
-            </div>
-            <div>
-              <label>マイページURL</label>
-              <input type="url" data-field="mypageUrl" value="${escapeHtml(item.mypageUrl)}" placeholder="https://..." />
-              <div class="inline-copy">
-                ${safeUrl ? `<a class="link-open" href="${safeUrl}" target="_blank" rel="noopener noreferrer">マイページを開く</a>` : ''}
-                ${item.mypageUrl ? `<button type="button" class="btn-mini" data-copy="${escapeHtml(item.mypageUrl)}">URLコピー</button>` : ''}
-              </div>
-            </div>
-            <div>
-              <label>ログインID</label>
-              <input type="text" data-field="loginId" value="${escapeHtml(item.loginId)}" placeholder="ログインID" />
-              ${item.loginId ? `<div class="inline-copy"><button type="button" class="btn-mini" data-copy="${escapeHtml(item.loginId)}">IDコピー</button></div>` : ''}
-            </div>
-            <div>
-              <label>メモ</label>
-              <input type="text" data-field="memo" value="${escapeHtml(item.memo)}" placeholder="メモ" />
+            <div style="font-size:0.82rem; font-weight:700; color:${diff !== null && diff <= 3 && item.phase !== 'お見送り' && item.phase !== '内定' ? '#dc2626' : '#334155'};">
+              ${dateText}
             </div>
           </div>
-        `;
-      }).join('');
-    }
+          ${item.flow ? `<div class="flow-box"><strong>選考フロー：</strong>${escapeHtml(item.flow)}</div>` : ''}
+          <div class="meta-row">
+            <span>ES状況：<strong>${item.status || '未提出'}</strong></span>
+            ${item.loginId ? `<span>ID：<code>${escapeHtml(item.loginId)}</code> <button class="btn-outline btn-sm" onclick="copyText('${escapeHtml(item.loginId)}')">コピー</button></span>` : ''}
+            ${item.memo ? `<span>メモ：${escapeHtml(item.memo)}</span>` : ''}
+          </div>
+          <div class="item-actions">
+            ${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener"><button class="btn-outline btn-sm">マイページを開く ↗</button></a>` : ''}
+            <button class="btn-outline btn-sm" onclick="startEdit('${item.id}')">編集・フェーズ更新</button>
+            <button class="btn-danger" onclick="deleteItem('${item.id}')">削除</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 
-    async function handleFieldChange(target) {
-      const container = target.closest('[data-id]');
-      const field = target.getAttribute('data-field');
-      if (!container || !field) return;
-
-      const id = container.getAttribute('data-id');
-      const currentList = [...getActiveList()];
-      const idx = currentList.findIndex(c => c.id === id);
-      if (idx === -1) return;
-
-      const updatedItem = {
-        ...currentList[idx],
-        [field]: target.value.trim()
-      };
-      currentList[idx] = updatedItem;
-      setActiveList(currentList);
-      render();
-
-      if (!isDemoMode && gasUrl) {
-        try {
-          await postToGas({ action: 'upsert', item: updatedItem });
-          showToast('スプレッドシートを更新しました');
-        } catch (err) {
-          showToast(`同期エラー: ${err.message}`);
-        }
-      } else {
-        showToast(isDemoMode ? 'デモデータを更新しました' : '保存しました');
-      }
-    }
-
-    el.addCompanyForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = el.companyNameInput.value.trim();
-      if (!name) return;
-
-      const newItem = {
-        id: `${isDemoMode ? 'demo' : 'cmp'}_${Date.now()}`,
-        companyName: name,
-        priority: el.priorityInput.value,
-        status: el.statusInput.value,
-        deadline: el.deadlineInput.value,
-        mypageUrl: el.mypageUrlInput.value.trim(),
-        loginId: el.loginIdInput.value.trim(),
-        memo: el.memoInput.value.trim()
-      };
-
-      const nextList = [...getActiveList(), newItem];
-      setActiveList(nextList);
-      render();
-      el.addCompanyForm.reset();
-      el.priorityInput.value = '中';
-      el.statusInput.value = 'ES作成中';
-
-      if (!isDemoMode && gasUrl) {
-        try {
-          await postToGas({ action: 'upsert', item: newItem });
-          showToast('追加してスプレッドシートに反映しました');
-        } catch (err) {
-          showToast(`同期エラー: ${err.message}`);
-        }
-      } else {
-        showToast(isDemoMode ? 'デモ一覧に追加しました' : '企業を追加しました');
-      }
-    });
-
-    document.addEventListener('change', (e) => {
-      if (e.target.matches('[data-field]')) {
-        handleFieldChange(e.target);
-      } else if (
-        e.target === el.searchKeywordInput ||
-        e.target === el.filterPrioritySelect ||
-        e.target === el.filterStatusSelect ||
-        e.target === el.hideClosedCheckbox
-      ) {
-        render();
-      }
-    });
-
-    el.searchKeywordInput.addEventListener('input', render);
-
-    el.resetFilterBtn.addEventListener('click', () => {
-      el.searchKeywordInput.value = '';
-      el.filterPrioritySelect.value = 'ALL';
-      el.filterStatusSelect.value = 'ALL';
-      el.hideClosedCheckbox.checked = false;
-      render();
-      showToast('絞り込み条件をリセットしました');
-    });
-
-    el.kpiAllCard.addEventListener('click', () => {
-      el.filterStatusSelect.value = 'ALL';
-      el.hideClosedCheckbox.checked = false;
-      render();
-    });
-
-    el.kpiUrgentCard.addEventListener('click', () => {
-      el.filterStatusSelect.value = 'ES作成中';
-      el.hideClosedCheckbox.checked = false;
-      render();
-    });
-
-    el.kpiProgressCard.addEventListener('click', () => {
-      el.filterStatusSelect.value = 'ALL';
-      el.hideClosedCheckbox.checked = true;
-      render();
-    });
-
-    el.kpiOfferCard.addEventListener('click', () => {
-      el.filterStatusSelect.value = '内定';
-      el.hideClosedCheckbox.checked = false;
-      render();
-    });
-
-    el.toggleDemoBtn.addEventListener('click', () => {
-      if (isDemoMode) return;
-      demoCompanies = createSampleDemoData();
-      isDemoMode = true;
-      render();
-      showToast('デモデータを読み込みました');
-    });
-
-    el.exitDemoBtn.addEventListener('click', () => {
-      isDemoMode = false;
-      render();
-      showToast('本番データに戻りました');
-    });
-
-    document.addEventListener('click', async (e) => {
-      const copyVal = e.target.getAttribute('data-copy');
-      if (copyVal !== null) {
-        try {
-          await navigator.clipboard.writeText(copyVal);
-          showToast('コピーしました');
-        } catch {
-          showToast('コピーできませんでした');
-        }
-        return;
-      }
-
-      const deleteId = e.target.getAttribute('data-delete');
-      if (deleteId) {
-        const nextList = getActiveList().filter(c => c.id !== deleteId);
-        setActiveList(nextList);
-        render();
-
-        if (!isDemoMode && gasUrl) {
-          try {
-            await postToGas({ action: 'delete', id: deleteId });
-            showToast('削除してスプレッドシートに反映しました');
-          } catch (err) {
-            showToast(`同期エラー: ${err.message}`);
-          }
-        } else {
-          showToast('削除しました');
-        }
-      }
-    });
-
-    el.saveGasUrlBtn.addEventListener('click', async () => {
-      gasUrl = el.gasUrlInput.value.trim();
-      localStorage.setItem(STORAGE_KEY_GAS_URL, gasUrl);
-      if (!gasUrl) {
-        setSyncStatus('ローカル保存モード');
-        showToast('GAS URLを解除しました');
-        return;
-      }
-      try {
-        await fetchFromGas();
-        showToast('スプレッドシートと接続しました');
-      } catch (err) {
-        setSyncStatus('接続エラー');
-        showToast(`接続エラー: ${err.message}`);
-      }
-    });
-
-    el.reloadFromGasBtn.addEventListener('click', async () => {
-      if (!gasUrl) {
-        showToast('先にGASのURLを入力して保存してください');
-        return;
-      }
-      try {
-        await fetchFromGas();
-        showToast('最新データを読み込みました');
-      } catch (err) {
-        setSyncStatus('接続エラー');
-        showToast(`読み込みエラー: ${err.message}`);
-      }
-    });
-
-    (async function init() {
-      loadLocal();
-      gasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL) || '';
-      el.gasUrlInput.value = gasUrl;
-      render();
-
-      if (gasUrl) {
-        try {
-          await fetchFromGas();
-        } catch {
-          setSyncStatus('オフライン／ローカル表示中');
-        }
-      }
-    })();
-  </script>
+  function escapeHtml(str) {
+    return String(str || '').replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+  }
+</script>
 </body>
 </html>
