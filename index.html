@@ -25,7 +25,7 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding-bottom: 84px; /* 下部固定タブの分 */
+      padding-bottom: 84px;
     }
     header {
       background: var(--navy);
@@ -118,6 +118,7 @@
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-navy { background: var(--navy); color: #fff; }
     .btn-outline { background: #fff; color: var(--navy); border: 1px solid var(--border); }
+    .btn-soft { background: var(--accent-soft); color: var(--accent); border: 1px solid #bfdbfe; }
     .btn-demo { background: #f59e0b; color: #1e293b; }
     .btn-danger { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; padding: 6px 10px; font-size: 0.78rem; }
     .btn-sm { padding: 6px 10px; font-size: 0.78rem; }
@@ -266,7 +267,6 @@
       align-items: center;
       margin-top: 4px;
     }
-    .item-actions a { text-decoration: none; }
 
     /* Settings */
     .gas-stack {
@@ -332,12 +332,13 @@
       color: #fff;
       padding: 9px 16px;
       border-radius: 999px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s;
       z-index: 50;
-      white-space: nowrap;
+      max-width: 92vw;
+      text-align: center;
     }
     .toast.show { opacity: 1; }
   </style>
@@ -576,7 +577,7 @@
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2200);
+    setTimeout(() => t.classList.remove('show'), 2500);
   }
 
   function saveGasUrl() {
@@ -680,6 +681,55 @@
     if (!rel) return false;
     const diff = daysUntil(rel.date);
     return normalizePriority(item.priority) === 'HIGH' && diff !== null && diff <= 7;
+  }
+
+  // ③ ID自動コピー＋マイページ起動
+  function openMyPageWithCopy(id) {
+    const target = getActiveList().find(x => x.id === id);
+    if (!target || !target.url) return;
+
+    if (target.loginId) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(target.loginId).catch(() => {});
+      }
+      showToast(`ID「${target.loginId}」をコピーしました`);
+    }
+    window.open(target.url, '_blank', 'noopener');
+  }
+
+  // ② Googleカレンダーへワンタップ追加
+  function openGoogleCalendar(id) {
+    const target = getActiveList().find(x => x.id === id);
+    if (!target) return;
+    const rel = getRelevantDate(target);
+    if (!rel || !rel.date) {
+      showToast('締切日または次回予定日を設定してください');
+      return;
+    }
+
+    const cleanDate = rel.date.replace(/-/g, '');
+    const nextDayObj = new Date(rel.date + 'T00:00:00');
+    nextDayObj.setDate(nextDayObj.getDate() + 1);
+    const nextDayStr = nextDayObj.toISOString().slice(0, 10).replace(/-/g, '');
+
+    const title = `【就活・${rel.label}】${target.company}（${target.phase || '選考中'}）`;
+    const detailLines = [
+      `企業名：${target.company}`,
+      `フェーズ：${target.phase || ''}`,
+      target.flow ? `選考フロー：${target.flow}` : '',
+      target.loginId ? `ログインID：${target.loginId}` : '',
+      target.url ? `マイページ：${target.url}` : '',
+      target.memo ? `メモ：${target.memo}` : '',
+      'ダッシュボード：https://thanaoka-dev.github.io/shukatsu-app/'
+    ].filter(Boolean).join('\n');
+
+    const calUrl =
+      'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + encodeURIComponent(title) +
+      '&dates=' + cleanDate + '/' + nextDayStr +
+      '&details=' + encodeURIComponent(detailLines);
+
+    window.open(calUrl, '_blank', 'noopener');
   }
 
   async function handleSaveItem() {
@@ -946,7 +996,8 @@
             ${item.memo ? `<span>メモ：${escapeHtml(item.memo)}</span>` : ''}
           </div>
           <div class="item-actions">
-            ${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener"><button class="btn-outline btn-sm">マイページを開く ↗</button></a>` : ''}
+            ${item.url ? `<button class="btn-soft btn-sm" onclick="openMyPageWithCopy('${item.id}')">${item.loginId ? 'IDコピー＆マイページ ↗' : 'マイページを開く ↗'}</button>` : ''}
+            ${rel ? `<button class="btn-outline btn-sm" onclick="openGoogleCalendar('${item.id}')">📅 カレンダー追加</button>` : ''}
             <button class="btn-outline btn-sm" onclick="startEdit('${item.id}')">編集・フェーズ更新</button>
             <button class="btn-danger" onclick="deleteItem('${item.id}')">削除</button>
           </div>
